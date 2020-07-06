@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/mark/.arduino15/packages/esp32/tools/**",
+                "/home/mark/.arduino15/packages/esp32/hardware/esp32/1.0.4/**",
+                "/home/rvbc-/.arduino15/packages/esp32/hardware/esp32/1.0.4/**",
+                "/home/rvbc-/.arduino15/packages/esp32/tools/**"
+            ],
+            "forcedInclude": [],
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}
