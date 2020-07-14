@@ -1,0 +1,27 @@
+{
+   "use_local_IP":"yes",
+   "local_IP":"192.168.1.105",
+   "use_gateway_&_subnet":"yes",
+   "gateway":"192.168.1.1",
+   "subnet":"255.255.255.0",
+   "use_dns":"yes",
+   "dns":"192.168.1.1",
+   "networks":[
+      {
+         "ssid":"Dupa",
+         "password":"gfdgfd8"
+      },
+      {
+         "ssid":"Dupa2",
+         "password":"dfgfdgdfgdf"
+      },
+      {
+         "ssid":"MK",
+         "password":"MK12345678"
+      },
+      {
+         "ssid":"test",
+         "password":"test12345"
+      }
+   ]
+}

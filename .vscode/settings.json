@@ -51,6 +51,7 @@
         "memory_resource": "cpp",
         "netfwd": "cpp",
         "random": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "iostream": "cpp"
     }
 }
