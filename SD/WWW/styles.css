@@ -1,0 +1,167 @@
+body{
+	background-color: #303030;
+	margin: 0 !important;
+	color: white;
+	font-family: 'Lato', sans-serif;
+}
+
+h3{
+	font-size: 52px;
+}
+
+#wrapper{
+	width: 100%;
+}
+
+#header{	
+	padding: 40px;
+}
+
+#logo{
+	font-family: 'Josefin Sans', sans-serif;
+	font-size: 122px;
+	letter-spacing: 3px;
+	text-align: center;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#about{
+    padding: 0px 80px;
+}
+
+.sidebar{
+	width: 100%;
+	min-width: 1000px;
+	text-align: center;
+	background-color: #c60f0f;
+	font-size: 24px;
+	border-top: 1px solid #751b1b;
+	border-bottom: 1px solid #751b1b;
+}
+
+ol{
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	display: inline-table;'
+	height: 35px;
+}
+
+ol > li{
+	float: left;
+	height: 45px;
+	padding: 10px 1px;
+	line-height: 200%;
+}
+
+ol > li:hover > a{
+	background-color: #a40d0d;
+}
+
+ol > li > a{
+	text-decoration: none;
+	padding: 0 20px;
+	min-width: 100px;
+	color: white; 
+	display: block;
+	border: 2px solid;
+    border-radius: 10px;
+	border-color: #c60f0f;
+}
+
+.sticky
+{
+	width: 100%;
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 100;
+}
+
+#content{
+	width: 1600px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 10px;
+	font-size: 30px;
+	text-align: justify;
+}
+
+a{
+	text-decoration: none;
+	color: white;
+}
+
+.frame{
+	padding: 10px 0;
+	display: flex;
+}
+
+.frame > .image{
+	margin-right: 20px;
+	margin-top: auto;
+	margin-bottom: auto;
+	vertical-align: middle;
+	text-align: center;
+	min-width: 460px;
+	min-height: 180px;
+	padding-top: 20px;
+	font-size: 150px;
+}
+
+.frame > .image > img{
+	margin:auto;
+	display:block;
+	border-style: solid;
+    border-width: 3px;
+	border: color: white;
+	width: 300px;
+	height: 300px;
+	border-radius: 10px;
+}
+
+.frame > .starttext{
+	width: 1000px;
+	height:400px;
+    line-height:40px; /* Height / no. of lines to display */
+    overflow:hidden;
+	margin-top: auto;
+	margin-bottom: auto;
+	vertical-align: middle;
+}
+
+.text > a{
+	color: #f93f3f;
+}
+
+.dottedline
+{
+	height: 5px;
+	margin-top: 15px;
+	margin-bottom: 20px;
+	border-bottom: 5px dotted #444444;
+}
+
+h1{
+	padding-left: 70px;
+	font-size: 62px;
+}
+
+#slider{
+	text-align: center;
+}
+
+#slider img{
+	width: 858px;
+	height: 606px;
+}
+
+#footer{
+	width: 100%;
+	text-align: center;
+	background-color: #202020;
+	padding: 20px 0;
+	font-size: 18px;
+}

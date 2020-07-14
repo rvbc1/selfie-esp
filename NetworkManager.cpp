@@ -280,6 +280,7 @@ void NetworkManager::printSavedNetworks(uint8_t show_password) {
 }
 
 void NetworkManager::printLoadedData() {
+    Serial.println("\nLoaded Network Data:\n");
     Serial.println("Access Point:");
     if (using_access_point)
         Serial.println("  using: yes");
