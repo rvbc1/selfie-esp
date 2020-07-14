@@ -11,7 +11,6 @@
 
 File root;
 
-WiFiMulti wifiMulti;
 ESP32WebServer server(80);
 
 // void printDirectory(File dir, int numTabs) {
@@ -60,10 +59,6 @@ void setup() {
 
     delay(1000);
 
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP("Nettigo Config");
-
-
 
     NetworkManager *networkManager = new NetworkManager(SD.open(NETWORK_SETTINGS_FILE));
 
@@ -73,17 +68,6 @@ void setup() {
         Serial.println(F("Error setting up MDNS responder!"));
         ESP.restart();
     }
-    
-    /* after writing then reopen the file and read it */
-
-    //   const char* sensor = doc["networks"][0]["ssid"];
-    //   const char* pass = doc["networks"][0]["password"];
-    // long time = doc["time"];
-    //  double latitude = doc["data"][0];
-    // double longitude = doc["data"][1];
-
-    //  Serial.println(sensor);
-    //   Serial.println(pass);
 }
 
 void loop() {}
