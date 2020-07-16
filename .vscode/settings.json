@@ -52,6 +52,7 @@
         "netfwd": "cpp",
         "random": "cpp",
         "string": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "list": "cpp"
     }
 }

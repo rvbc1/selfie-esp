@@ -1,0 +1,20 @@
+{
+    "Files": [
+        {
+            "name": "File 1",
+            "size": "1KiB"
+        },
+        {
+            "name": "File 2",
+            "size": "2MiB"
+        },
+        {
+            "name": "File 3",
+            "size": "3GiB"
+        },
+        {
+            "name": "File 4",
+            "size": "4GiB"
+        }
+    ]
+}

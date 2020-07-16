@@ -11,20 +11,64 @@
     <link href='http://fonts.googleapis.com/css?family=Lato|Josefin+Sans&subset=latin,latin-ext' rel='stylesheet'
         type='text/css'>
 
-    <title>Check your age</title>
+    <title>ESP32</title>
+
 </head>
 
 <body>
-    <h1>File Server 1.0</h1>
-    <a href='/download'><button>Download</button></a><a href='/upload'><button>Upload</button></a><a
-        href='/flash'><button>Flash</button></a><a href='/erase'><button>Remove all</button></a>
+    <h1>Selfie Server 1.0</h1>
+    <a href='/download'><button>Download</button></a>
+    <a href='/upload'><button>Upload</button></a>
+    <a href='/flash'><button>Flash</button></a>
+    <button id="btn">Remove all</button>
     <h1>Files</h1>
+    <div id='files'>
+
+    </div>
     <ul>
         <li><a href='/'>Home</a></li>
         <li><a href='/download'>Download</a></li>
         <li><a href='/upload'>Upload</a></li>
     </ul>
-    <footer>&copy; D.L.Bird 2018</footer>
+    <footer>&copy; Marek Knosala 2020 ;)</footer>
+
+
+
+
+    <script>
+        var btn = document.getElementById('btn');
+
+        btn.addEventListener('click', function () {
+            var Request = new XMLHttpRequest();
+            Request.open('GET', 'data.json');
+            Request.onload = function () {
+                var Data = JSON.parse(Request.responseText);
+                console.log(Data);
+                alert(JSON.stringify(Data));
+            };
+            Request.send();
+
+        });
+
+        function ready() {
+            var Request = new XMLHttpRequest();
+            Request.open('GET', 'data.json');
+            Request.onload = function () {
+                var Data = JSON.parse(Request.responseText);
+
+                var items = Data.Files;
+                for (var i = 0; i < items.length; i++) {
+                    var div = document.createElement('div');   // Create a <button> element
+                    div.setAttribute('class', 'file');
+                    div.innerHTML = items[i].name;                   // Insert text
+                    document.getElementById("files").appendChild(div);               // Append <button> to <body> 
+                }
+            };
+            Request.send();
+        }
+
+        document.addEventListener("DOMContentLoaded", ready);
+    </script>
 </body>
 
 </html>
