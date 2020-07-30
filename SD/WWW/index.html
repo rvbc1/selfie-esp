@@ -8,8 +8,8 @@
 
 
     <link rel="stylesheet" href="styles.css">
-    <link href='http://fonts.googleapis.com/css?family=Lato|Josefin+Sans&subset=latin,latin-ext' rel='stylesheet'
-        type='text/css'>
+    <!-- <link href='http://fonts.googleapis.com/css?family=Lato|Josefin+Sans&subset=latin,latin-ext' rel='stylesheet'
+        type='text/css'> !-->
 
     <title>ESP32</title>
 
@@ -58,10 +58,61 @@
 
                 var items = Data.Files;
                 for (var i = 0; i < items.length; i++) {
-                    var div = document.createElement('div');   // Create a <button> element
+                    var div = document.createElement('div'); 
                     div.setAttribute('class', 'file');
-                    div.innerHTML = items[i].name;                   // Insert text
-                    document.getElementById("files").appendChild(div);               // Append <button> to <body> 
+
+                    var file_name = document.createElement('div'); 
+                    file_name.setAttribute('class', 'file_name');
+                    file_name.innerHTML = items[i].name;
+
+                    var file_size = document.createElement('div'); 
+                    file_size.setAttribute('class', 'file_size');
+                    file_size.innerHTML = '[' + items[i].size + ' bytes]'; 
+
+                    var file_settings = document.createElement('div'); 
+                    file_settings.setAttribute('class', 'file_settings');
+                    file_settings.innerHTML = ''; 
+
+                    var flash_file = document.createElement('img');
+                    flash_file.id = "files_icon";
+                    flash_file.src = "flash.png";
+                    flash_file.alt = "flash";
+
+
+                    var download_link = document.createElement('a');
+                    download_link.setAttribute('href', "download?name=" + items[i].name);
+
+                    var download_file = document.createElement('img');
+                    download_file.id = "files_icon";
+                    download_file.src = "download.png";
+                    download_file.alt = "download";
+
+                    download_link.appendChild(download_file);
+
+                   // ?arg1=3&arg2=4&arg3="arduino"
+
+                    var delete_link = document.createElement('a');
+                    delete_link.setAttribute('href', "delete?name=" + items[i].name);
+                 //   delete_link.src = "delete?name=" + items[i].name;
+
+                    var delete_file = document.createElement('img');
+                    delete_file.id = "files_icon";
+                    delete_file.src = "delete.png";
+                    delete_file.alt = "delete";
+
+                    delete_link.appendChild(delete_file);
+
+                    file_settings.appendChild(flash_file);
+                    file_settings.appendChild(download_link);
+                    file_settings.appendChild(delete_link);
+                    
+
+
+                    div.appendChild(file_name);
+                    div.appendChild(file_size);
+                    div.appendChild(file_settings);
+
+                    document.getElementById("files").appendChild(div);               
                 }
             };
             Request.send();

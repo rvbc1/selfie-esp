@@ -17,6 +17,26 @@ body {
 	margin: 4px;
 }
 
+.file_name {
+	width: 50%;
+	float: left;
+}
+
+.file_size {
+	width: 25%;
+	float: left;
+}
+
+.file_settings {
+	width: 25%;
+	margin-left: 75%;
+}
+
+#files_icon{
+	padding-left: 10px;
+	height: 17px;
+}
+
 ul {
 	list-style-type: none;
 	margin: 0.1em;
@@ -82,17 +102,16 @@ table {
 	width: 85%;
 }
 
-"
- th,
-td {
+
+th, td {
 	border: 0.06em solid #dddddd;
 	text-align: left;
 	padding: 0.3em;
 	border-bottom: 0.06em solid #dddddd;
 }
 
-"
- tr:nth-child(odd) {
+
+tr:nth-child(odd) {
 	background-color: #eeeeee;
 }
 

@@ -1,6 +1,6 @@
 {
     "sketch": "main.ino",
     "board": "esp32:esp32:ttgo-lora32-v1",
-    "configuration": "FlashFreq=80,PartitionScheme=huge_app,UploadSpeed=921600,DebugLevel=none",
+    "configuration": "PartitionScheme=huge_app,FlashFreq=80,UploadSpeed=921600,DebugLevel=none",
     "port": "/dev/ttyUSB0"
 }

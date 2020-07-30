@@ -3,8 +3,6 @@
 NetworkManager::NetworkManager(File networks_file) {
     loadDataFromSettingsFile(networks_file);
 
-    printLoadedData();
-
     if (using_access_point && using_existing_wifi) {
         WiFi.mode(WIFI_AP_STA);
         startAccessPoint();

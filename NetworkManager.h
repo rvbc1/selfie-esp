@@ -3,7 +3,9 @@
 
 #include <ArduinoJson.h>
 #include <WiFi.h>
-#include <mySD.h>
+
+#include <SdFat.h>
+
 #include <WiFiMulti.h> 
 
 #include "Settings.h"

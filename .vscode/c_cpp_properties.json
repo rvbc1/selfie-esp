@@ -3,10 +3,15 @@
         {
             "name": "Linux",
             "includePath": [
+                "/home/rvbc-/Arduino/libraries/SdFat/src",
                 "/home/mark/.arduino15/packages/esp32/tools/**",
                 "/home/mark/.arduino15/packages/esp32/hardware/esp32/1.0.4/**",
                 "/home/rvbc-/.arduino15/packages/esp32/hardware/esp32/1.0.4/**",
-                "/home/rvbc-/.arduino15/packages/esp32/tools/**"
+                "/home/rvbc-/.arduino15/packages/esp32/tools/**",
+                "/home/rvbc-/Arduino/libraries/SdFat/src/**",
+                "/home/rvbc-/Arduino/libraries/SdFat/src/SdCard/**",
+                "/home/rvbc-/Arduino/libraries/SdFat/src/SpiDriver/**",
+                "/home/rvbc-/Arduino/libraries/SdFat/src/FatLib/**"
             ],
             "forcedInclude": [],
             "intelliSenseMode": "gcc-x64",
