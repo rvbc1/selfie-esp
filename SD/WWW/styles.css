@@ -1,3 +1,23 @@
+@-webkit-keyframes in {
+	0% { -webkit-transform: scale(0) rotate(12deg); opacity: 0; visibility: hidden;  }
+	100% { -webkit-transform: scale(1) rotate(0); opacity: 1; visibility: visible; }
+  }
+  
+  @keyframes in {
+	0% { transform: scale(0) rotate(12deg); opacity: 0; visibility: hidden;  }
+	100% { transform: scale(1) rotate(0); opacity: 1; visibility: visible; }
+  }
+  
+  @-webkit-keyframes out {
+	0% { -webkit-transform: scale(1) rotate(0); opacity: 1; visibility: visible; }
+	100% { -webkit-transform: scale(0) rotate(-12deg); opacity: 0; visibility: hidden; }
+  }
+  
+  @keyframes out {
+	0% { transform: scale(1) rotate(0); opacity: 1; visibility: visible; }
+	100% { transform: scale(0) rotate(-12deg); opacity: 0; visibility: hidden;  }
+  }
+
 body {
 	max-width: 65%;
 	margin: 0 auto;
@@ -8,6 +28,16 @@ body {
 	background-color: #303030;
 }
 
+[is_hiden=true] {
+	-webkit-animation: out 700ms ease both;
+	animation: out 700ms ease both;
+}
+
+[is_hiden=false] {
+	-webkit-animation: in 700ms ease both;
+	animation: in 700ms ease both;
+}
+
 .file {
 	background-color: #ddceee;
 	text-align: center;
@@ -16,8 +46,7 @@ body {
 	border-radius: 0.375em;
 	margin: 4px;
 
-	transition: visibility 0s linear 0.33s, opacity 0.33s linear;
-	transition-delay: 0s;
+	transition: height 1s, width 1s, padding 1s, visibility 1s, opacity 0.5s ease-out;
 }
 
 .file_name {

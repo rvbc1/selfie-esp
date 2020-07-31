@@ -53,7 +53,10 @@
             var all_files = document.querySelectorAll('[class="file"]');
             for (i = 0; i < all_files.length; i++) {
                 // if(files[i].style.display == "none"){
-                all_files[i].style.display = "none";
+                
+                //all_files[i].style.display = "none";
+                all_files[i].style.visibility = "hidden";
+                all_files[i].setAttribute('is_hiden', "true");
                 // } else {
                 //     files[i].style.display = "none";
                 // }
@@ -62,14 +65,18 @@
 
             var exists = document.querySelector('[id="' + dir + '"]') !== null;
             if (exists) {
-                document.querySelector('[id="' + dir + '"]').style.display = "block";
+                //document.querySelector('[id="' + dir + '"]').style.display = "block";
+                document.querySelector('[id="' + dir + '"]').style.visibility = "visible";
+                document.querySelector('[id="' + dir + '"]').setAttribute('is_hiden', "false");
             }
 
 
-            var selected_files = document.querySelectorAll('[title="' + dir + '"]');
+            var selected_files = document.querySelectorAll('[up_folder="' + dir + '"]');
             for (i = 0; i < selected_files.length; i++) {
                 // if(files[i].style.display == "none"){
-                selected_files[i].style.display = "block";
+                //selected_files[i].style.display = "block";
+                selected_files[i].style.visibility = "visible";
+                selected_files[i].setAttribute('is_hiden', "false");
                 // } else {
                 //     files[i].style.display = "none";
                 // }
@@ -81,13 +88,12 @@
 
             var file_dir = String(event, dir);
 
-            var exists = document.querySelector('[title="' + file_dir + '"]') !== null;
+            var exists = document.querySelector('[up_folder="' + file_dir + '"]') !== null;
             if (exists) {
-                if (document.querySelector('[title="' + file_dir + '"]').style.display == "none") {
+                if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "hidden") {
                     showFiles(file_dir);
-                } else if (document.querySelector('[title="' + file_dir + '"]').style.display == "block") {
-                    var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('title');
-                    console.log(up_dir);
+                } else if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "visible") {
+                    var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
                     showFiles(up_dir);
                 }
             }
@@ -100,13 +106,18 @@
                 var div = document.createElement('div');
                 div.setAttribute('class', 'file');
                 div.setAttribute('title', "/" + dir);
+                div.setAttribute('up_folder', "/" + dir);
                 var id = dir + "/" + items[i].name;
 
                 div.setAttribute('id', id);
                 if (show) {
-                    div.style.display = "block";
+                    //div.style.display = "block";
+                    div.style.visibility = "visible";
+                    div.setAttribute('is_hiden', "false");
                 } else {
-                    div.style.display = "none";
+                    //div.style.display = "none";
+                    div.style.visibility = "hidden";
+                    div.setAttribute('is_hiden', "true");
                 }
 
 
