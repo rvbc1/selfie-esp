@@ -170,10 +170,48 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
     }
 }
 
-String generateJson() {
-    DynamicJsonDocument doc(1024);
+void addJsonArray(String dir, JsonVariant *variant){
+    JsonObject json_dir = variant->createNestedObject();
 
-    JsonArray files = doc.createNestedArray("Files");
+    json_dir["name"] = dir;
+    json_dir["type"] = "Dir";
+    JsonArray files = json_dir.createNestedArray("Files");
+    //object.createNestedArray("Files");
+
+    SdFile dirFile;
+    SdFatJson file;
+
+    if (!dirFile.open(const_cast<char *>(dir.c_str()), O_RDONLY)) {
+        // sd.errorHalt("open root failed");
+    }
+    while (file.openNext(&dirFile, O_RDONLY)) {
+        // Skip directories and hidden files.
+        if (!file.isSubDir() && !file.isHidden()) {
+            // Save dirIndex of file in directory.
+            //   dirIndex[n] = file.dirIndex();
+
+            // Print the file number and name.
+            //   Serial.print(n++);
+            //  Serial.write(' ');
+            // file.printName(&Serial);
+            JsonObject json_file = files.createNestedObject();
+            json_file["name"] = file.getStringName();
+            json_file["type"] = "File";
+            json_file["size"] = file.fileSize();
+            // Serial.println(file.getStringName());
+        } else if (file.isSubDir()) {
+            JsonVariant files_variant = files;
+            addJsonArray(file.getStringName(), &files_variant);
+        }
+        file.close();
+    }
+}
+
+String generateJson() {
+    DynamicJsonDocument doc(2048);
+    JsonVariant variant = doc.to<JsonVariant>();
+    addJsonArray("/", &variant);
+    //JsonArray files = doc.createNestedArray("Files");
 
     // File dir = SD.open("/WWW/");
 
@@ -195,29 +233,7 @@ String generateJson() {
     // }
     // dir.close();
 
-    SdFile dirFile;
-    SdFatJson file;
 
-    if (!dirFile.open("/WWW", O_RDONLY)) {
-        // sd.errorHalt("open root failed");
-    }
-    while (file.openNext(&dirFile, O_RDONLY)) {
-        // Skip directories and hidden files.
-        if (!file.isSubDir() && !file.isHidden()) {
-            // Save dirIndex of file in directory.
-            //   dirIndex[n] = file.dirIndex();
-
-            // Print the file number and name.
-            //   Serial.print(n++);
-            //  Serial.write(' ');
-            // file.printName(&Serial);
-            JsonObject object = files.createNestedObject();
-            object["name"] = file.getStringName();
-            object["size"] = file.fileSize();
-            // Serial.println(file.getStringName());
-        }
-        file.close();
-    }
 
     // for(int i = 0; i < 6; i++){
     //     JsonObject object = files.createNestedObject();

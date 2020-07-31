@@ -15,6 +15,9 @@ body {
 	;
 	border-radius: 0.375em;
 	margin: 4px;
+
+	transition: visibility 0s linear 0.33s, opacity 0.33s linear;
+	transition-delay: 0s;
 }
 
 .file_name {

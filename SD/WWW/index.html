@@ -33,9 +33,8 @@
     <footer>&copy; Marek Knosala 2020 ;)</footer>
 
 
-
-
     <script>
+
         var btn = document.getElementById('btn');
 
         btn.addEventListener('click', function () {
@@ -50,70 +49,148 @@
 
         });
 
+        function showFiles(dir) {
+            var all_files = document.querySelectorAll('[class="file"]');
+            for (i = 0; i < all_files.length; i++) {
+                // if(files[i].style.display == "none"){
+                all_files[i].style.display = "none";
+                // } else {
+                //     files[i].style.display = "none";
+                // }
+
+            }
+
+            var exists = document.querySelector('[id="' + dir + '"]') !== null;
+            if (exists) {
+                document.querySelector('[id="' + dir + '"]').style.display = "block";
+            }
+
+
+            var selected_files = document.querySelectorAll('[title="' + dir + '"]');
+            for (i = 0; i < selected_files.length; i++) {
+                // if(files[i].style.display == "none"){
+                selected_files[i].style.display = "block";
+                // } else {
+                //     files[i].style.display = "none";
+                // }
+
+            }
+        }
+
+        var showFilesEvenetLisner = function (event, dir) {
+
+            var file_dir = String(event, dir);
+
+            var exists = document.querySelector('[title="' + file_dir + '"]') !== null;
+            if (exists) {
+                if (document.querySelector('[title="' + file_dir + '"]').style.display == "none") {
+                    showFiles(file_dir);
+                } else if (document.querySelector('[title="' + file_dir + '"]').style.display == "block") {
+                    var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('title');
+                    console.log(up_dir);
+                    showFiles(up_dir);
+                }
+            }
+        }
+
+
+
+        function generateFiles(items, dir, show = true) {
+            for (var i = 0; i < items.length; i++) {
+                var div = document.createElement('div');
+                div.setAttribute('class', 'file');
+                div.setAttribute('title', "/" + dir);
+                var id = dir + "/" + items[i].name;
+
+                div.setAttribute('id', id);
+                if (show) {
+                    div.style.display = "block";
+                } else {
+                    div.style.display = "none";
+                }
+
+
+                const file_name = document.createElement('div');
+                file_name.setAttribute('class', 'file_name');
+                file_name.innerHTML = items[i].name;
+
+                if (items[i].type == "Dir") {
+                    file_name.addEventListener('click', showFilesEvenetLisner.bind(event, id), false);
+                }
+
+                div.appendChild(file_name);
+
+
+                var file_size = document.createElement('div');
+                file_size.setAttribute('class', 'file_size');
+
+                if (items[i].type == "File") {
+                    file_size.innerHTML = 'file [' + items[i].size + ' bytes]';
+                }
+
+                if (items[i].type == "Dir") {
+                    file_size.innerHTML = 'dir [' + items[i].Files.length + ' files]';
+                }
+                div.appendChild(file_size)
+
+
+
+                var file_settings = document.createElement('div');
+                file_settings.setAttribute('class', 'file_settings');
+                file_settings.innerHTML = '';
+
+
+                var flash_file = document.createElement('img');
+                flash_file.id = "files_icon";
+                flash_file.src = "flash.png";
+                flash_file.alt = "flash";
+
+
+                var download_link = document.createElement('a');
+                download_link.setAttribute('href', "download?name=" + items[i].name);
+
+                var download_file = document.createElement('img');
+                download_file.id = "files_icon";
+                download_file.src = "download.png";
+                download_file.alt = "download";
+
+                download_link.appendChild(download_file);
+
+                // ?arg1=3&arg2=4&arg3="arduino"
+
+                var delete_link = document.createElement('a');
+                delete_link.setAttribute('href', "delete?name=" + items[i].name);
+                //   delete_link.src = "delete?name=" + items[i].name;
+
+                var delete_file = document.createElement('img');
+                delete_file.id = "files_icon";
+                delete_file.src = "delete.png";
+                delete_file.alt = "delete";
+
+                delete_link.appendChild(delete_file);
+
+                file_settings.appendChild(flash_file);
+                file_settings.appendChild(download_link);
+                file_settings.appendChild(delete_link);
+
+                div.appendChild(file_settings);
+
+
+                document.getElementById("files").appendChild(div);
+                if (items[i].type == "Dir") {
+                    generateFiles(items[i].Files, dir + items[i].name, false);
+                }
+            }
+        }
+
         function ready() {
             var Request = new XMLHttpRequest();
             Request.open('GET', 'data.json');
             Request.onload = function () {
                 var Data = JSON.parse(Request.responseText);
 
-                var items = Data.Files;
-                for (var i = 0; i < items.length; i++) {
-                    var div = document.createElement('div'); 
-                    div.setAttribute('class', 'file');
-
-                    var file_name = document.createElement('div'); 
-                    file_name.setAttribute('class', 'file_name');
-                    file_name.innerHTML = items[i].name;
-
-                    var file_size = document.createElement('div'); 
-                    file_size.setAttribute('class', 'file_size');
-                    file_size.innerHTML = '[' + items[i].size + ' bytes]'; 
-
-                    var file_settings = document.createElement('div'); 
-                    file_settings.setAttribute('class', 'file_settings');
-                    file_settings.innerHTML = ''; 
-
-                    var flash_file = document.createElement('img');
-                    flash_file.id = "files_icon";
-                    flash_file.src = "flash.png";
-                    flash_file.alt = "flash";
-
-
-                    var download_link = document.createElement('a');
-                    download_link.setAttribute('href', "download?name=" + items[i].name);
-
-                    var download_file = document.createElement('img');
-                    download_file.id = "files_icon";
-                    download_file.src = "download.png";
-                    download_file.alt = "download";
-
-                    download_link.appendChild(download_file);
-
-                   // ?arg1=3&arg2=4&arg3="arduino"
-
-                    var delete_link = document.createElement('a');
-                    delete_link.setAttribute('href', "delete?name=" + items[i].name);
-                 //   delete_link.src = "delete?name=" + items[i].name;
-
-                    var delete_file = document.createElement('img');
-                    delete_file.id = "files_icon";
-                    delete_file.src = "delete.png";
-                    delete_file.alt = "delete";
-
-                    delete_link.appendChild(delete_file);
-
-                    file_settings.appendChild(flash_file);
-                    file_settings.appendChild(download_link);
-                    file_settings.appendChild(delete_link);
-                    
-
-
-                    div.appendChild(file_name);
-                    div.appendChild(file_size);
-                    div.appendChild(file_settings);
-
-                    document.getElementById("files").appendChild(div);               
-                }
+                var items = Data[0].Files;
+                generateFiles(items, "");
             };
             Request.send();
         }
