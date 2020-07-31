@@ -49,14 +49,18 @@
 
         });
 
+        function hideFile(file) {
+            file.style.display = "none";
+        }
+
         function showFiles(dir) {
             var all_files = document.querySelectorAll('[class="file"]');
             for (i = 0; i < all_files.length; i++) {
                 // if(files[i].style.display == "none"){
-                
-                //all_files[i].style.display = "none";
+
                 all_files[i].style.visibility = "hidden";
                 all_files[i].setAttribute('is_hiden', "true");
+                all_files[i].setAttribute('is_opened_folder', "false");
                 // } else {
                 //     files[i].style.display = "none";
                 // }
@@ -65,23 +69,33 @@
 
             var exists = document.querySelector('[id="' + dir + '"]') !== null;
             if (exists) {
-                //document.querySelector('[id="' + dir + '"]').style.display = "block";
+                document.querySelector('[id="' + dir + '"]').style.display = "block";
                 document.querySelector('[id="' + dir + '"]').style.visibility = "visible";
                 document.querySelector('[id="' + dir + '"]').setAttribute('is_hiden', "false");
+                document.querySelector('[id="' + dir + '"]').setAttribute('is_opened_folder', "true");
             }
 
 
             var selected_files = document.querySelectorAll('[up_folder="' + dir + '"]');
             for (i = 0; i < selected_files.length; i++) {
                 // if(files[i].style.display == "none"){
-                //selected_files[i].style.display = "block";
+                selected_files[i].style.display = "block";
                 selected_files[i].style.visibility = "visible";
                 selected_files[i].setAttribute('is_hiden', "false");
                 // } else {
                 //     files[i].style.display = "none";
                 // }
-
             }
+
+            all_files = document.querySelectorAll('[class="file"]');
+            for (i = 0; i < all_files.length; i++) {
+                if (all_files[i].style.visibility == "hidden") {
+                    setTimeout(hideFile.bind(null, all_files[i]), 700);
+                }
+            }
+
+
+
         }
 
         var showFilesEvenetLisner = function (event, dir) {
@@ -101,31 +115,39 @@
 
 
 
-        function generateFiles(items, dir, show = true) {
+        function generateFiles(items, dir = "") {
             for (var i = 0; i < items.length; i++) {
                 var div = document.createElement('div');
                 div.setAttribute('class', 'file');
-                div.setAttribute('title', "/" + dir);
-                div.setAttribute('up_folder', "/" + dir);
-                var id = dir + "/" + items[i].name;
+                div.setAttribute('title', dir);
+                div.setAttribute('up_folder', dir);
+                div.setAttribute('is_opened_folder', "false");
+                if (items[i].type == "Dir") {
+                    div.setAttribute('type', "dir");
+                }
+                if (items[i].type == "File") {
+                    div.setAttribute('type', "file");
+                }
+
+                var id = "";
+                if(dir == "/" || dir == ""){
+                    id = dir + items[i].name;
+                } else {
+                    id = dir + "/" + items[i].name;
+                }
 
                 div.setAttribute('id', id);
-                if (show) {
-                    //div.style.display = "block";
-                    div.style.visibility = "visible";
-                    div.setAttribute('is_hiden', "false");
-                } else {
-                    //div.style.display = "none";
-                    div.style.visibility = "hidden";
-                    div.setAttribute('is_hiden', "true");
-                }
+                div.style.display = "none";
+                div.style.visibility = "hidden";
+                div.setAttribute('is_hiden', "true");
+
 
 
                 const file_name = document.createElement('div');
                 file_name.setAttribute('class', 'file_name');
                 file_name.innerHTML = items[i].name;
 
-                if (items[i].type == "Dir") {
+                if (items[i].type == "Dir" && items[i].name != "/") {
                     file_name.addEventListener('click', showFilesEvenetLisner.bind(event, id), false);
                 }
 
@@ -151,26 +173,54 @@
                 file_settings.innerHTML = '';
 
 
-                var flash_file = document.createElement('img');
-                flash_file.id = "files_icon";
-                flash_file.src = "flash.png";
-                flash_file.alt = "flash";
+                if (items[i].type == "File") {
+                    var flash_file = document.createElement('img');
+                    flash_file.id = "files_icon";
+                    flash_file.src = "flash.png";
+                    flash_file.alt = "flash";
+                    file_settings.appendChild(flash_file);
+                }
 
 
-                var download_link = document.createElement('a');
-                download_link.setAttribute('href', "download?name=" + items[i].name);
+                if (items[i].type == "File") {
+                    var download_link = document.createElement('a');
+                    download_link.setAttribute('href', "download?name=" + id);
 
-                var download_file = document.createElement('img');
-                download_file.id = "files_icon";
-                download_file.src = "download.png";
-                download_file.alt = "download";
+                    var download_file = document.createElement('img');
+                    download_file.id = "files_icon";
+                    download_file.src = "download.png";
+                    download_file.alt = "download";
 
-                download_link.appendChild(download_file);
+                    download_link.appendChild(download_file);
+                    file_settings.appendChild(download_link);
+                }
+
+                if (items[i].type == "Dir") {
+                    var input = document.createElement("input");
+                    input.id = "mkdir_input";
+                    input.type = "text";
+                    input.maxLength="16";
+                    input.placeholder="name";
+
+                    var mkdir_link = document.createElement('a');
+                    mkdir_link.setAttribute('href', "mkdir?name=");
+
+                    var mkdir = document.createElement('img');
+                    mkdir.id = "files_icon";
+                    mkdir.src = "mkdir.png";
+                    mkdir.alt = "mkdir";
+
+                    mkdir_link.appendChild(mkdir);
+                    file_settings.appendChild(input);
+                    file_settings.appendChild(mkdir_link);
+                }
+
+
 
                 // ?arg1=3&arg2=4&arg3="arduino"
 
                 var delete_link = document.createElement('a');
-                delete_link.setAttribute('href', "delete?name=" + items[i].name);
+                delete_link.setAttribute('href', "delete?name=" + id);
                 //   delete_link.src = "delete?name=" + items[i].name;
 
                 var delete_file = document.createElement('img');
@@ -180,8 +230,7 @@
 
                 delete_link.appendChild(delete_file);
 
-                file_settings.appendChild(flash_file);
-                file_settings.appendChild(download_link);
+
                 file_settings.appendChild(delete_link);
 
                 div.appendChild(file_settings);
@@ -189,7 +238,7 @@
 
                 document.getElementById("files").appendChild(div);
                 if (items[i].type == "Dir") {
-                    generateFiles(items[i].Files, dir + items[i].name, false);
+                    generateFiles(items[i].Files, id, false);
                 }
             }
         }
@@ -200,8 +249,9 @@
             Request.onload = function () {
                 var Data = JSON.parse(Request.responseText);
 
-                var items = Data[0].Files;
-                generateFiles(items, "");
+                var items = Data;
+                generateFiles(items);
+                showFiles("/");
             };
             Request.send();
         }

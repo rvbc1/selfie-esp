@@ -49,6 +49,22 @@ body {
 	transition: height 1s, width 1s, padding 1s, visibility 1s, opacity 0.5s ease-out;
 }
 
+[is_opened_folder=true] {
+	background-color: #FFFFFF;
+}
+
+[type=dir] .file_settings{
+	opacity: 0;
+}
+
+[is_opened_folder=true] .file_settings {
+	opacity: 1;
+}
+
+[is_opened_folder=true] .file_size {
+	opacity: 0;
+}
+
 .file_name {
 	width: 50%;
 	float: left;
@@ -251,3 +267,32 @@ a {
 p {
 	font-size: 75%;
 }
+
+input[type=text]{
+	padding-top: 0px;
+  	width: 20%;	
+	border: 2px solid gray;
+  	border-radius: 4px;
+	margin-top: 0px;
+	transition: width 0.4s ease-in-out;
+}
+
+input[type=text]:focus {
+  width: 40%;
+}
+
+::-webkit-input-placeholder {
+	text-align: center;
+ }
+ 
+ :-moz-placeholder { /* Firefox 18- */
+	text-align: center;  
+ }
+ 
+ ::-moz-placeholder {  /* Firefox 19+ */
+	text-align: center;  
+ }
+ 
+ :-ms-input-placeholder {  
+	text-align: center; 
+ }

@@ -262,6 +262,12 @@ HttpServer::HttpServer(MemoryManager *memory2) {
         file.close();
     });
 
+    server.on("/mkdir.png", []() {
+        File file = memory->sd.open("WWW/mkdir.png");
+        size_t sent = server.streamFile(file, "image/png");
+        file.close();
+    });
+
     server.on("/delete.png", []() {
         File file = memory->sd.open("WWW/delete.png");
         size_t sent = server.streamFile(file, "image/png");
@@ -292,7 +298,7 @@ HttpServer::HttpServer(MemoryManager *memory2) {
            // Serial.print("Parametr: ");
            // Serial.print(server.argName(i));
            // Serial.print(" wartość: ");
-           String filename = "WWW/" + server.arg(i);
+           String filename = server.arg(i);
             if (HttpServer::memory->sd.exists(
                 const_cast<char *>(filename.c_str()))) {
                 Serial.print("Deleting existing file \"");
@@ -312,7 +318,7 @@ HttpServer::HttpServer(MemoryManager *memory2) {
            // Serial.print("Parametr: ");
            // Serial.print(server.argName(i));
            // Serial.print(" wartość: ");
-           String filename = "WWW/" + server.arg(i);
+           String filename = server.arg(i);
             File download;
             download.open(const_cast<char *>(filename.c_str()));
             if (download) {
