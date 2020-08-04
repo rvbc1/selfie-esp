@@ -4,8 +4,7 @@
 #define FIRMWARE_FILE "ESP32/firmware.bin"
 #define OLD_FIRMWARE_FILE "ESP32/firmware.bin.old"
 #define NETWORK_SETTINGS_FILE F("ESP32/network.json")
-//#define NETWORK_SETTINGS_FILE F("ESP32/NET~1.JSO")
+#define UPLOAD_TEMPORARY_FILE F("WWW/temp_file")
 
-//#define NETWORK_SETTINGS_FILE "NET~1.JSO"
 
 #endif

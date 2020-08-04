@@ -53,10 +53,16 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
         Serial.print("handleFileUpload Name: ");
 
 
-        String dir = "";
         for (uint8_t i = 0; i < server.args(); i++) {
-            dir = server.arg(i);
-            Serial.println(dir);
+            Serial.print(server.argName(i));
+            Serial.print(" = ");
+            Serial.println(server.arg(i));
+        }
+
+        String dir ="";
+
+        if(server.hasArg("dir") && server.arg("dir") != NULL ){
+            dir = server.arg("dir");
         }
 
         filename = dir + filename;
@@ -91,6 +97,16 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
             server.send(500, "text/plain", "500: couldn't create file");
         }
     }
+}
+
+void handleFileUploadData() {
+	Serial.print("Data1: ");
+        for (uint8_t i = 0; i < server.args(); i++) {
+            Serial.print(server.argName(i));
+            Serial.print(" = ");
+            Serial.println(server.arg(i));
+        }
+    server.send(200);
 }
 
 void handleFileFlash() {  // upload a new file to the SPIFFS
@@ -181,6 +197,10 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
         }
     }
 }
+
+
+
+
 
 void addJsonArray(String dir, JsonVariant *variant){
     SdFatJson dirFile;
@@ -429,12 +449,16 @@ HttpServer::HttpServer(MemoryManager *memory2) {
                   file.close();
               });
 
-    server.on(
-        "/upload", HTTP_POST,  // if the client posts to the upload page
-        []() {
-            server.send(200);
-        },  // Send status 200 (OK) to tell the client we are ready to receive
-        handleFileUpload  // Receive and save the file
+    // server.on(
+    //     "/upload", HTTP_POST,  // if the client posts to the upload page
+    //     []() {
+    //         server.send(200);
+    //     },  // Send status 200 (OK) to tell the client we are ready to receive
+    //     handleFileUpload  // Receive and save the file
+    // );
+        server.on(
+        "/upload", HTTP_POST,  // Send status 200 (OK) to tell the client we are ready to receive
+        handleFileUploadData,handleFileUpload  // Receive and save the file
     );
 
     // server.onNotFound(handleNotFound);
