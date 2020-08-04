@@ -57,8 +57,16 @@ body {
 	opacity: 0;
 }
 
+[type=dir] a{
+	display: none;
+}
+
 [is_opened_folder=true] .file_settings {
 	opacity: 1;
+}
+
+[is_opened_folder=true] a {
+	display: inline;
 }
 
 [is_opened_folder=true] .file_size {

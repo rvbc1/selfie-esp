@@ -18,7 +18,7 @@
 <body>
     <h1>Selfie Server 1.0</h1>
     <a href='/download'><button>Download</button></a>
-    <a href='/upload'><button>Upload</button></a>
+    <a id="upload_button" href='/upload'><button>Upload</button></a>
     <a href='/flash'><button>Flash</button></a>
     <button id="btn">Remove all</button>
     <h1>Files</h1>
@@ -53,7 +53,7 @@
             file.style.display = "none";
         }
 
-        function showFiles(dir) {
+        function showOpenedFiles(dir){
             var all_files = document.querySelectorAll('[class="file"]');
             for (i = 0; i < all_files.length; i++) {
                 // if(files[i].style.display == "none"){
@@ -61,11 +61,20 @@
                 all_files[i].style.visibility = "hidden";
                 all_files[i].setAttribute('is_hiden', "true");
                 all_files[i].setAttribute('is_opened_folder', "false");
+                setTimeout(hideFile.bind(null, all_files[i]), 700);
                 // } else {
                 //     files[i].style.display = "none";
                 // }
 
             }
+            setTimeout(showFiles.bind(null, dir), 700);
+
+        }
+
+        function showFiles(dir) {
+
+            document.getElementById("upload_button").href="/upload?dir=" + dir; 
+
 
             var exists = document.querySelector('[id="' + dir + '"]') !== null;
             if (exists) {
@@ -87,30 +96,43 @@
                 // }
             }
 
-            all_files = document.querySelectorAll('[class="file"]');
-            for (i = 0; i < all_files.length; i++) {
-                if (all_files[i].style.visibility == "hidden") {
-                    setTimeout(hideFile.bind(null, all_files[i]), 700);
-                }
-            }
+            // all_files = document.querySelectorAll('[class="file"]');
+            // for (i = 0; i < all_files.length; i++) {
+            //     if (all_files[i].style.visibility == "hidden") {
+            //         setTimeout(hideFile.bind(null, all_files[i]), 700);
+            //     }
+            // }
 
 
 
         }
 
+
         var showFilesEvenetLisner = function (event, dir) {
 
             var file_dir = String(event, dir);
 
-            var exists = document.querySelector('[up_folder="' + file_dir + '"]') !== null;
-            if (exists) {
-                if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "hidden") {
-                    showFiles(file_dir);
-                } else if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "visible") {
-                    var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
-                    showFiles(up_dir);
-                }
+
+            var is_open = document.querySelector('[id="' + file_dir + '"]').getAttribute('is_opened_folder');
+            if(is_open == "false"){
+                showOpenedFiles(file_dir);
+            } else {
+                var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
+                showOpenedFiles(up_dir);
             }
+            // var exists = document.querySelector('[up_folder="' + file_dir + '"]') !== null;
+            // if (exists) {
+            //     if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "hidden") {
+            //         showOpenedFiles(file_dir);
+            //     } else if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "visible") {
+            //         var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
+            //         showOpenedFiles(up_dir);
+            //     }
+            // }
+        }
+
+        function getExtension(fileName){
+            return fileName.substr(fileName.lastIndexOf('.') + 1);
         }
 
 
@@ -158,11 +180,11 @@
                 file_size.setAttribute('class', 'file_size');
 
                 if (items[i].type == "File") {
-                    file_size.innerHTML = 'file [' + items[i].size + ' bytes]';
+                    file_size.innerHTML = '[' + items[i].size + ' bytes]';
                 }
 
                 if (items[i].type == "Dir") {
-                    file_size.innerHTML = 'dir [' + items[i].Files.length + ' files]';
+                    file_size.innerHTML = '[' + items[i].Files.length + ' files]';
                 }
                 div.appendChild(file_size)
 
@@ -174,11 +196,13 @@
 
 
                 if (items[i].type == "File") {
-                    var flash_file = document.createElement('img');
-                    flash_file.id = "files_icon";
-                    flash_file.src = "flash.png";
-                    flash_file.alt = "flash";
-                    file_settings.appendChild(flash_file);
+                    if(getExtension(items[i].name) == "bin" || getExtension(items[i].name) == "hex"){
+                        var flash_file = document.createElement('img');
+                        flash_file.id = "files_icon";
+                        flash_file.src = "flash.png";
+                        flash_file.alt = "flash";
+                        file_settings.appendChild(flash_file);
+                    }
                 }
 
 
@@ -251,7 +275,7 @@
 
                 var items = Data;
                 generateFiles(items);
-                showFiles("/");
+                showOpenedFiles("/");
             };
             Request.send();
         }

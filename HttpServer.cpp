@@ -52,9 +52,16 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
         if (!filename.startsWith("/")) filename = "/" + filename;
         Serial.print("handleFileUpload Name: ");
 
-        Serial.println(filename);
 
-        filename = "WWW" + filename;
+        String dir = "";
+        for (uint8_t i = 0; i < server.args(); i++) {
+            dir = server.arg(i);
+            Serial.println(dir);
+        }
+
+        filename = dir + filename;
+
+        Serial.println(filename);
 
         if (HttpServer::memory->sd.exists(
                 const_cast<char *>(filename.c_str()))) {
@@ -94,13 +101,18 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
         if (!filename.startsWith("/")) filename = "/" + filename;
         Serial.print("handleFileUpload Name: ");
 
-        filename = "WWW/firmware.bin";
+        filename = FIRMWARE_FILE;
         Serial.println(filename);
+
+
 
         if (HttpServer::memory->sd.exists(
                 const_cast<char *>(filename.c_str()))) {
-            Serial.println("Deleting existing file");
-            HttpServer::memory->sd.remove(const_cast<char *>(filename.c_str()));
+            if (HttpServer::memory->sd.exists(OLD_FIRMWARE_FILE)) {
+                Serial.println("Deleting old backup firmware");
+                HttpServer::memory->sd.remove(OLD_FIRMWARE_FILE);
+            }                 
+            HttpServer::memory->sd.rename(const_cast<char *>(filename.c_str()), OLD_FIRMWARE_FILE);
         }
 
         fsUploadFile.open(
@@ -122,7 +134,7 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
                               "/");  // Redirect the client to the success page
             server.send(303);
 
-            File file = HttpServer::memory->sd.open("WWW/firmware.bin");
+            File file = HttpServer::memory->sd.open("ESP32/firmware.bin");
 
             size_t updateSize = file.fileSize();
 
@@ -171,19 +183,24 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
 }
 
 void addJsonArray(String dir, JsonVariant *variant){
+    SdFatJson dirFile;
+    SdFatJson file;
+
     JsonObject json_dir = variant->createNestedObject();
 
-    json_dir["name"] = dir;
+    if (!dirFile.open(const_cast<char *>(dir.c_str()), O_RDONLY)) {
+        json_dir["error"] = "cannot open file";
+    }
+
+   // json_dir["name"] = dir;
+    json_dir["name"] = dirFile.getStringName();
     json_dir["type"] = "Dir";
     JsonArray files = json_dir.createNestedArray("Files");
     //object.createNestedArray("Files");
 
-    SdFile dirFile;
-    SdFatJson file;
 
-    if (!dirFile.open(const_cast<char *>(dir.c_str()), O_RDONLY)) {
-        // sd.errorHalt("open root failed");
-    }
+
+
     while (file.openNext(&dirFile, O_RDONLY)) {
         // Skip directories and hidden files.
         if (!file.isSubDir() && !file.isHidden()) {
@@ -201,14 +218,18 @@ void addJsonArray(String dir, JsonVariant *variant){
             // Serial.println(file.getStringName());
         } else if (file.isSubDir()) {
             JsonVariant files_variant = files;
-            addJsonArray(file.getStringName(), &files_variant);
+            if (dir.endsWith("/")){
+                addJsonArray(dir + file.getStringName(), &files_variant);
+            } else {
+                addJsonArray(dir + "/" + file.getStringName(), &files_variant);
+            }
         }
         file.close();
     }
 }
 
 String generateJson() {
-    DynamicJsonDocument doc(2048);
+    DynamicJsonDocument doc(4096);
     JsonVariant variant = doc.to<JsonVariant>();
     addJsonArray("/", &variant);
     //JsonArray files = doc.createNestedArray("Files");
@@ -263,25 +284,25 @@ HttpServer::HttpServer(MemoryManager *memory2) {
     });
 
     server.on("/mkdir.png", []() {
-        File file = memory->sd.open("WWW/mkdir.png");
+        File file = memory->sd.open("WWW/icons/mkdir.png");
         size_t sent = server.streamFile(file, "image/png");
         file.close();
     });
 
     server.on("/delete.png", []() {
-        File file = memory->sd.open("WWW/delete.png");
+        File file = memory->sd.open("WWW/icons/delete.png");
         size_t sent = server.streamFile(file, "image/png");
         file.close();
     });
 
     server.on("/download.png", []() {
-        File file = memory->sd.open("WWW/download.png");
+        File file = memory->sd.open("WWW/icons/download.png");
         size_t sent = server.streamFile(file, "image/png");
         file.close();
     });
 
     server.on("/flash.png", []() {
-        File file = memory->sd.open("WWW/flash.png");
+        File file = memory->sd.open("WWW/icons/flash.png");
         size_t sent = server.streamFile(file, "image/png");
         file.close();
     });

@@ -53,8 +53,8 @@ class SdFatJson : public FatFile {
     // }
 
     String getStringName(){
-        FatFile file;
-        file.openNext(this, O_RDONLY);
+        //FatFile file;
+        //file.openNext(this, O_RDONLY);
         String name = "";
             char buf[255];
             size_t size;

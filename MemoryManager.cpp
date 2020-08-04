@@ -74,7 +74,7 @@ MemoryManager::MemoryManager() {
   //  superFatFile rootDir;
    // rootDir.open("/");
     //rootDir.ls(LS_R | LS_SIZE);
-    // sd.ls(&Serial, LS_R | LS_SIZE);
+    sd.ls(&Serial, LS_R | LS_SIZE);
 
     delay(1000);
 
