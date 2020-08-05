@@ -10,6 +10,7 @@
 class HttpServer {
    public:
    HttpServer(MemoryManager *memory2);
+   void setBTmsg(String msg);
    void process();
    //private:
    static MemoryManager *memory;

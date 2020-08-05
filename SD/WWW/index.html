@@ -6,25 +6,464 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="author" content="Marek Knosala" />
 
+    <!-- <script>
+        function reloadStyle(pThis) {
+            pThis.onerror = null;
+            pThis.src = pThis.src;
+        }
+    </script> -->
 
-    <link rel="stylesheet" href="styles.css">
+
+    <!-- <link rel="stylesheet" href="styles.css" onerror="reloadStyle(this);"> -->
     <!-- <link href='http://fonts.googleapis.com/css?family=Lato|Josefin+Sans&subset=latin,latin-ext' rel='stylesheet'
         type='text/css'> !-->
 
     <title>ESP32</title>
 
+    <style>
+        @-webkit-keyframes in {
+            0% {
+                -webkit-transform: scale(0) rotate(12deg);
+                opacity: 0;
+                visibility: hidden;
+            }
+            100% {
+                -webkit-transform: scale(1) rotate(0);
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+        
+        @keyframes in {
+            0% {
+                transform: scale(0) rotate(12deg);
+                opacity: 0;
+                visibility: hidden;
+            }
+            100% {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+        
+        @-webkit-keyframes out {
+            0% {
+                -webkit-transform: scale(1) rotate(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            100% {
+                -webkit-transform: scale(0) rotate(-12deg);
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+        
+        @keyframes out {
+            0% {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            100% {
+                transform: scale(0) rotate(-12deg);
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+        
+        body {
+            max-width: 65%;
+            margin: 0 auto;
+            font-family: arial;
+            font-size: 105%;
+            text-align: center;
+            color: black;
+            background-color: #303030;
+        }
+        
+        [is_hiden=true] {
+            -webkit-animation: out 700ms ease both;
+            animation: out 700ms ease both;
+        }
+        
+        [is_hiden=false] {
+            -webkit-animation: in 700ms ease both;
+            animation: in 700ms ease both;
+        }
+        
+        .file {
+            background-color: #ddceee;
+            text-align: center;
+            padding: 2px;
+            ;
+            border-radius: 0.375em;
+            margin: 4px;
+            transition: height 1s, width 1s, padding 1s, visibility 1s, opacity 0.5s ease-out;
+        }
+        
+        [is_opened_folder=true] {
+            background-color: #FFFFFF;
+        }
+        
+        [type=dir] .file_settings {
+            opacity: 0;
+        }
+        
+        [type=dir] a {
+            display: none;
+        }
+        
+        [is_opened_folder=true] .file_settings {
+            opacity: 1;
+        }
+        
+        [is_opened_folder=true] a {
+            display: inline;
+        }
+        
+        [is_opened_folder=true] .file_size {
+            opacity: 0;
+        }
+        
+        .file_name {
+            width: 50%;
+            float: left;
+        }
+        
+        .file_size {
+            width: 25%;
+            float: left;
+        }
+        
+        .file_settings {
+            width: 25%;
+            margin-left: 75%;
+        }
+        
+        .files_icon {
+            padding-left: 10px;
+            height: 17px;
+        }
+        
+        ul {
+            list-style-type: none;
+            margin: 0.1em;
+            margin-top: 15px;
+            padding: 0;
+            border-radius: 0.375em;
+            overflow: hidden;
+            background-color: #fffffff0;
+            font-size: 1em;
+        }
+        
+        li {
+            float: left;
+            border-radius: 0.375em;
+            border-right: 0.06em solid #bbb;
+        }
+        
+        last-child {
+            border-right: none;
+            font-size: 85%
+        }
+        
+        li a {
+            display: block;
+            border-radius: 0.375em;
+            padding: 0.44em 0.44em;
+            text-decoration: none;
+            font-size: 85%;
+            color: black;
+        }
+        
+        li a:hover {
+            background-color: #EAE3EA;
+            border-radius: 0.375em;
+            font-size: 85%
+        }
+        
+        section {
+            font-size: 0.88em;
+        }
+        
+        h1 {
+            color: white;
+            border-radius: 0.5em;
+            font-size: 1em;
+            padding: 0.2em 0.2em;
+            background: #c60f0f;
+        }
+        
+        h2 {
+            color: orange;
+            font-size: 1.0em;
+        }
+        
+        h3 {
+            font-size: 0.8em;
+        }
+        
+        table {
+            font-family: arial, sans-serif;
+            font-size: 0.9em;
+            border-collapse: collapse;
+            width: 85%;
+        }
+        
+        th,
+        td {
+            border: 0.06em solid #dddddd;
+            text-align: left;
+            padding: 0.3em;
+            border-bottom: 0.06em solid #dddddd;
+        }
+        
+        tr:nth-child(odd) {
+            background-color: #eeeeee;
+        }
+        
+        .rcorners_n {
+            border-radius: 0.5em;
+            background: #558ED5;
+            padding: 0.3em 0.3em;
+            width: 20%;
+            color: white;
+            font-size: 75%;
+        }
+        
+        .rcorners_m {
+            border-radius: 0.5em;
+            background: #558ED5;
+            padding: 0.3em 0.3em;
+            width: 50%;
+            color: white;
+            font-size: 75%;
+        }
+        
+        .rcorners_w {
+            border-radius: 0.5em;
+            background: #558ED5;
+            padding: 0.3em 0.3em;
+            width: 70%;
+            color: white;
+            font-size: 75%;
+        }
+        
+        .column {
+            float: left;
+            width: 50%;
+            height: 45%;
+        }
+        
+        .row:after {
+            content: '';
+            display: table;
+            clear: both;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        footer {
+            background-color: #c60f0f;
+            text-align: center;
+            padding: 0.3em 0.3em;
+            border-radius: 0.375em;
+            font-size: 60%;
+            color: white;
+        }
+        
+        button {
+            border-radius: 0.5em;
+            background: #c60f0f;
+            padding: 0.3em 0.3em;
+            width: 20%;
+            color: white;
+            font-size: 130%;
+        }
+        
+        .buttons {
+            border-radius: 0.5em;
+            background: #751b1b;
+            padding: 0.3em 0.3em;
+            width: 15%;
+            color: white;
+            font-size: 80%;
+        }
+        
+        .buttonsm {
+            border-radius: 0.5em;
+            background: #751b1b;
+            padding: 0.3em 0.3em;
+            width: 9%;
+            color: white;
+            font-size: 70%;
+        }
+        
+        .buttonm {
+            border-radius: 0.5em;
+            background: #751b1b;
+            padding: 0.3em 0.3em;
+            width: 15%;
+            color: white;
+            font-size: 70%;
+        }
+        
+        .buttonw {
+            border-radius: 0.5em;
+            background: #751b1b;
+            padding: 0.3em 0.3em;
+            width: 40%;
+            color: white;
+            font-size: 70%;
+        }
+        
+        a {
+            font-size: 75%;
+        }
+        
+        p {
+            font-size: 75%;
+        }
+        
+        input[type=text] {
+            padding-top: 0px;
+            width: 20%;
+            border: 2px solid gray;
+            border-radius: 4px;
+            margin-top: 0px;
+            transition: width 0.4s ease-in-out;
+        }
+        
+        input[type=text]:focus {
+            width: 40%;
+        }
+        
+         ::-webkit-input-placeholder {
+            text-align: center;
+        }
+        
+         :-moz-placeholder {
+            /* Firefox 18- */
+            text-align: center;
+        }
+        
+         ::-moz-placeholder {
+            /* Firefox 19+ */
+            text-align: center;
+        }
+        
+         :-ms-input-placeholder {
+            text-align: center;
+        }
+        /* Style the tab */
+        
+        .tab {
+            overflow: hidden;
+            background-color: #202020;
+            border-radius: 0.5em 0.5em 0.0em 0.0em;
+            padding: 0.3em 0.3em;
+        }
+        /* Style the buttons inside the tab */
+        
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+            margin-right: 7px
+        }
+        /* Change background color of buttons on hover */
+        
+        .tab button:hover {
+            background-color: #930b0b;
+        }
+        /* Create an active/current tablink class */
+        
+        .tab button.active {
+            background-color: #c60f0f;
+        }
+        /* Style the tab content */
+        
+        .tabcontent {
+            display: none;
+            border: 7px solid #202020;
+            padding: 6px 12px;
+            border-top: none;
+        }
+    </style>
+
 </head>
 
 <body>
     <h1>Selfie Server 1.0</h1>
-    <a href='/download'><button>Download</button></a>
-    <a id="upload_button" href='/upload'><button>Upload</button></a>
-    <a href='/flash'><button>Flash</button></a>
-    <button id="btn">Remove all</button>
-    <h1>Files</h1>
-    <div id='files'>
-
+    <div class="tab">
+        <button class="tablinks" onclick="openCity(event, 'Files_tab')" id="defaultOpen">Files</button>
+        <button class="tablinks" onclick="openCity(event, 'BT_tab')">Bluetooth</button>
+        <button class="tablinks" onclick="openCity(event, 'Settings_tab')">Settings</button>
     </div>
+
+    <div id="Files_tab" class="tabcontent">
+        <h1>Files</h1>
+        <div id='files'></div>
+    </div>
+
+    <div id="BT_tab" class="tabcontent">
+        <h1 id="BT">BT</h1>
+    </div>
+
+    <div id="Settings_tab" class="tabcontent">
+        <a href='/flash'><button>Flash ESP32</button></a>
+        <button id="btn">Remove all</button>
+    </div>
+
+    <script>
+        var BT_timer;
+
+        function openCity(evt, cityName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            if (cityName == "BT_tab") {
+                BT_timer = setInterval(function() {
+                    // Call a function repetatively with 2 Second interval
+                    getData();
+                }, 2000); //2000mSeconds update rate
+                function getData() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            document.getElementById("BT").innerHTML =
+                                this.responseText;
+                        }
+                    };
+                    xhttp.open("GET", "readBT", true);
+                    xhttp.send();
+                }
+            } else {
+                clearInterval(BT_timer);
+            }
+        }
+
+        document.getElementById("defaultOpen").click();
+    </script>
+
     <ul>
         <li><a href='/'>Home</a></li>
         <li><a href='/download'>Download</a></li>
@@ -33,14 +472,15 @@
     <footer>&copy; Marek Knosala 2020 ;)</footer>
 
 
-    <script>
 
+
+    <script>
         var btn = document.getElementById('btn');
 
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function() {
             var Request = new XMLHttpRequest();
             Request.open('GET', 'data.json');
-            Request.onload = function () {
+            Request.onload = function() {
                 var Data = JSON.parse(Request.responseText);
                 console.log(Data);
                 alert(JSON.stringify(Data));
@@ -53,7 +493,7 @@
             file.style.display = "none";
         }
 
-        function showOpenedFiles(dir){
+        function showOpenedFiles(dir) {
             var all_files = document.querySelectorAll('[class="file"]');
             for (i = 0; i < all_files.length; i++) {
                 // if(files[i].style.display == "none"){
@@ -73,7 +513,7 @@
 
         function showFiles(dir) {
 
-            document.getElementById("upload_button").href="/upload?dir=" + dir; 
+            //  document.getElementById("upload_button").href = "/upload?dir=" + dir;
 
 
             var exists = document.querySelector('[id="' + dir + '"]') !== null;
@@ -108,13 +548,13 @@
         }
 
 
-        var showFilesEvenetLisner = function (event, dir) {
+        var showFilesEvenetLisner = function(event, dir) {
 
             var file_dir = String(event, dir);
 
 
             var is_open = document.querySelector('[id="' + file_dir + '"]').getAttribute('is_opened_folder');
-            if(is_open == "false"){
+            if (is_open == "false") {
                 showOpenedFiles(file_dir);
             } else {
                 var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
@@ -131,9 +571,66 @@
             // }
         }
 
-        function getExtension(fileName){
+        function getExtension(fileName) {
             return fileName.substr(fileName.lastIndexOf('.') + 1);
         }
+
+
+        var download_image_timer;
+        var flash_image_timer;
+        var mkdir_image_timer;
+        var delete_image_timer;
+        var upload_image_timer;
+
+        function startReloadDownload(pThis) {
+            download_image_timer = setInterval(reloadImage(), 1000, pThis);
+        }
+
+        function stopReloadDownload(pThis) {
+            clearInterval(download_image_timer);
+        }
+
+        function startReloadFlash(pThis) {
+            flash_image_timer = setInterval(reloadImage(), 1000, pThis);
+        }
+
+        function stopReloadFlash(pThis) {
+            clearInterval(flash_image_timer);
+        }
+
+        function startReloadMkdir(pThis) {
+            mkdir_image_timer = setInterval(reloadImage(), 1000, pThis);
+        }
+
+        function stopReloadMkdir(pThis) {
+            clearInterval(mkdir_image_timer);
+        }
+
+        function startReloadDelete(pThis) {
+            delete_image_timer = setInterval(reloadImage(), 1000, pThis);
+        }
+
+        function stopReloadDelete(pThis) {
+            clearInterval(delete_image_timer);
+        }
+
+
+        function startReloadUpload(pThis) {
+            upload_image_timer = setInterval(reloadImage(), 1000, pThis);
+        }
+
+        function stopReloadUpload(pThis) {
+            clearInterval(upload_image_timer);
+        }
+
+
+
+        function reloadImage(pThis) {
+            pThis.onerror = null;
+            pThis.src = pThis.src;
+        }
+
+
 
 
 
@@ -152,7 +649,7 @@
                 }
 
                 var id = "";
-                if(dir == "/" || dir == ""){
+                if (dir == "/" || dir == "") {
                     id = dir + items[i].name;
                 } else {
                     id = dir + "/" + items[i].name;
@@ -196,11 +693,16 @@
 
 
                 if (items[i].type == "File") {
-                    if(getExtension(items[i].name) == "bin" || getExtension(items[i].name) == "hex"){
+                    if (getExtension(items[i].name) == "bin" || getExtension(items[i].name) == "hex") {
                         var flash_file = document.createElement('img');
-                        flash_file.id = "files_icon";
+                        flash_file.setAttribute('class', 'files_icon');
+                        flash_file.id = "flash_icon";
                         flash_file.src = "flash.png";
                         flash_file.alt = "flash";
+                        flash_file.setAttribute('title', "flash");
+                        flash_file.setAttribute('onerror', "startReloadFlash(this);");
+                        flash_file.setAttribute('onload', "stopReloadFlash(this);");
+
                         file_settings.appendChild(flash_file);
                     }
                 }
@@ -211,9 +713,13 @@
                     download_link.setAttribute('href', "download?name=" + id);
 
                     var download_file = document.createElement('img');
-                    download_file.id = "files_icon";
+                    download_file.setAttribute('class', 'files_icon');
+                    download_file.id = "download_icon";
                     download_file.src = "download.png";
                     download_file.alt = "download";
+                    download_file.setAttribute('title', "download this file");
+                    download_file.setAttribute('onerror', "startReloadDownload(this);");
+                    download_file.setAttribute('onload', "stopReloadDownload(this);");
 
                     download_link.appendChild(download_file);
                     file_settings.appendChild(download_link);
@@ -223,20 +729,39 @@
                     var input = document.createElement("input");
                     input.id = "mkdir_input";
                     input.type = "text";
-                    input.maxLength="16";
-                    input.placeholder="name";
+                    input.maxLength = "16";
+                    input.placeholder = "name";
 
                     var mkdir_link = document.createElement('a');
                     mkdir_link.setAttribute('href', "mkdir?name=");
 
                     var mkdir = document.createElement('img');
-                    mkdir.id = "files_icon";
+                    mkdir.setAttribute('class', 'files_icon');
+                    mkdir.id = "mkdir_icon";
                     mkdir.src = "mkdir.png";
                     mkdir.alt = "mkdir";
-
+                    mkdir.setAttribute('title', "create new folder");
+                    mkdir.setAttribute('onerror', "startReloadMkdir(this);");
+                    mkdir.setAttribute('onload', "stopReloadMkdir(this);");
                     mkdir_link.appendChild(mkdir);
+
                     file_settings.appendChild(input);
                     file_settings.appendChild(mkdir_link);
+
+                    var upload_file_link = document.createElement('a');
+                    upload_file_link.setAttribute('href', "upload?dir=" + id);
+
+                    var upload_file = document.createElement('img');
+                    upload_file.setAttribute('class', 'files_icon');
+                    upload_file.id = "upload_icon";
+                    upload_file.src = "upload.png";
+                    upload_file.alt = "upload";
+                    upload_file.setAttribute('title', "upload file");
+                    upload_file.setAttribute('onerror', "startReloadUpload(this);");
+                    upload_file.setAttribute('onload', "stopReloadUpload(this);");
+                    upload_file_link.appendChild(upload_file);
+
+                    file_settings.appendChild(upload_file_link);
                 }
 
 
@@ -248,9 +773,13 @@
                 //   delete_link.src = "delete?name=" + items[i].name;
 
                 var delete_file = document.createElement('img');
-                delete_file.id = "files_icon";
+                delete_file.setAttribute('class', 'files_icon');
+                delete_file.id = "delete_icon";
                 delete_file.src = "delete.png";
                 delete_file.alt = "delete";
+                delete_file.setAttribute('title', "delete this file");
+                delete_file.setAttribute('onerror', "startReloadDelete(this);");
+                delete_file.setAttribute('onload', "stopReloadDelete(this);");
 
                 delete_link.appendChild(delete_file);
 
@@ -268,9 +797,21 @@
         }
 
         function ready() {
+            // var cssId = 'myCss'; // you could encode the css path itself to generate id..
+            // if (!document.getElementById(cssId)) {
+            //     var head = document.getElementsByTagName('head')[0];
+            //     var link = document.createElement('link');
+            //     link.id = cssId;
+            //     link.rel = 'stylesheet';
+            //     link.type = 'text/css';
+            //     link.href = 'styles.css';
+            //     link.media = 'all';
+            //     head.appendChild(link);
+            // }
+
             var Request = new XMLHttpRequest();
             Request.open('GET', 'data.json');
-            Request.onload = function () {
+            Request.onload = function() {
                 var Data = JSON.parse(Request.responseText);
 
                 var items = Data;
@@ -279,6 +820,8 @@
             };
             Request.send();
         }
+
+
 
         document.addEventListener("DOMContentLoaded", ready);
     </script>

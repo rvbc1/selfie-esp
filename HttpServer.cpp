@@ -12,6 +12,8 @@ ESP32WebServer server(HTTP_PORT);
 
 MemoryManager *HttpServer::memory;
 
+String bt_msg = "BT";
+
 void HomePage() {
     File file = HttpServer::memory->sd.open("WWW/index.html");
     size_t sent = server.streamFile(file, "text/html");
@@ -43,6 +45,14 @@ void HomePage() {
 //     // digitalWrite(led, 0);
 // }
 
+void removeFileIfExists(String filename) {
+    if (HttpServer::memory->sd.exists(const_cast<char *>(filename.c_str()))) {
+        Serial.print("Deleting existing file ");
+        Serial.println(filename);
+        HttpServer::memory->sd.remove(const_cast<char *>(filename.c_str()));
+    }
+}
+
 File fsUploadFile;
 
 void handleFileUpload() {  // upload a new file to the SPIFFS
@@ -52,16 +62,15 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
         if (!filename.startsWith("/")) filename = "/" + filename;
         Serial.print("handleFileUpload Name: ");
 
-
         for (uint8_t i = 0; i < server.args(); i++) {
             Serial.print(server.argName(i));
             Serial.print(" = ");
             Serial.println(server.arg(i));
         }
 
-        String dir ="";
+        String dir = "";
 
-        if(server.hasArg("dir") && server.arg("dir") != NULL ){
+        if (server.hasArg("dir") && server.arg("dir") != NULL) {
             dir = server.arg("dir");
         }
 
@@ -69,16 +78,10 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
 
         Serial.println(filename);
 
-        if (HttpServer::memory->sd.exists(
-                const_cast<char *>(filename.c_str()))) {
-            Serial.println("Deleting existing file");
-            HttpServer::memory->sd.remove(const_cast<char *>(filename.c_str()));
-        }
+        removeFileIfExists(filename);
 
-        fsUploadFile.open(
-            filename.c_str(),
-            O_RDWR | O_CREAT);  // Open the file for writing in SPIFFS
-                                // (create if it doesn't exist)
+        fsUploadFile.open(filename.c_str(), O_RDWR | O_CREAT);
+
         filename = String();
     } else if (upload.status == UPLOAD_FILE_WRITE) {
         if (fsUploadFile)
@@ -90,8 +93,7 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
             fsUploadFile.close();  // Close the file again
             Serial.print("handleFileUpload Size: ");
             Serial.println(upload.totalSize);
-            server.sendHeader("Location",
-                              "/");  // Redirect the client to the success page
+            server.sendHeader("Location", "/");
             server.send(303);
         } else {
             server.send(500, "text/plain", "500: couldn't create file");
@@ -100,12 +102,12 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
 }
 
 void handleFileUploadData() {
-	Serial.print("Data1: ");
-        for (uint8_t i = 0; i < server.args(); i++) {
-            Serial.print(server.argName(i));
-            Serial.print(" = ");
-            Serial.println(server.arg(i));
-        }
+    Serial.print("Data1: ");
+    for (uint8_t i = 0; i < server.args(); i++) {
+        Serial.print(server.argName(i));
+        Serial.print(" = ");
+        Serial.println(server.arg(i));
+    }
     server.send(200);
 }
 
@@ -120,34 +122,24 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
         filename = FIRMWARE_FILE;
         Serial.println(filename);
 
-
-
         if (HttpServer::memory->sd.exists(
                 const_cast<char *>(filename.c_str()))) {
-            if (HttpServer::memory->sd.exists(OLD_FIRMWARE_FILE)) {
-                Serial.println("Deleting old backup firmware");
-                HttpServer::memory->sd.remove(OLD_FIRMWARE_FILE);
-            }                 
-            HttpServer::memory->sd.rename(const_cast<char *>(filename.c_str()), OLD_FIRMWARE_FILE);
+            removeFileIfExists(OLD_FIRMWARE_FILE);
+            HttpServer::memory->sd.rename(const_cast<char *>(filename.c_str()),
+                                          OLD_FIRMWARE_FILE);
         }
 
-        fsUploadFile.open(
-            filename.c_str(),
-            O_RDWR | O_CREAT);  // Open the file for writing in SPIFFS
-                                // (create if it doesn't exist)
+        fsUploadFile.open(filename.c_str(), O_RDWR | O_CREAT);
+
         filename = String();
     } else if (upload.status == UPLOAD_FILE_WRITE) {
-        if (fsUploadFile)
-            fsUploadFile.write(
-                upload.buf,
-                upload.currentSize);  // Write the received bytes to the file
+        if (fsUploadFile) fsUploadFile.write(upload.buf, upload.currentSize);
     } else if (upload.status == UPLOAD_FILE_END) {
         if (fsUploadFile) {        // If the file was successfully created
             fsUploadFile.close();  // Close the file again
             Serial.print("handleFileUpload Size: ");
             Serial.println(upload.totalSize);
-            server.sendHeader("Location",
-                              "/");  // Redirect the client to the success page
+            server.sendHeader("Location", "/");
             server.send(303);
 
             File file = HttpServer::memory->sd.open("ESP32/firmware.bin");
@@ -170,9 +162,7 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
                             "Update successfully completed. Rebooting.");
                         Serial.println("Reset in 4 seconds...");
 
-                        server.sendHeader(
-                            "Location",
-                            "/");  // Redirect the client to the success page
+                        server.sendHeader("Location", "/");
                         server.send(303);
                         delay(4000);
 
@@ -198,11 +188,7 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
     }
 }
 
-
-
-
-
-void addJsonArray(String dir, JsonVariant *variant){
+void addJsonArray(String dir, JsonVariant *variant) {
     SdFatJson dirFile;
     SdFatJson file;
 
@@ -212,33 +198,25 @@ void addJsonArray(String dir, JsonVariant *variant){
         json_dir["error"] = "cannot open file";
     }
 
-   // json_dir["name"] = dir;
     json_dir["name"] = dirFile.getStringName();
     json_dir["type"] = "Dir";
     JsonArray files = json_dir.createNestedArray("Files");
-    //object.createNestedArray("Files");
-
-
-
 
     while (file.openNext(&dirFile, O_RDONLY)) {
-        // Skip directories and hidden files.
-        if (!file.isSubDir() && !file.isHidden()) {
-            // Save dirIndex of file in directory.
-            //   dirIndex[n] = file.dirIndex();
-
-            // Print the file number and name.
-            //   Serial.print(n++);
-            //  Serial.write(' ');
-            // file.printName(&Serial);
+        if (!file.isSubDir()) {
             JsonObject json_file = files.createNestedObject();
             json_file["name"] = file.getStringName();
             json_file["type"] = "File";
             json_file["size"] = file.fileSize();
-            // Serial.println(file.getStringName());
+            if (file.isHidden()) {
+                json_file["hidden"] = "true";
+            } else {
+                json_file["hidden"] = "false";
+            }
+
         } else if (file.isSubDir()) {
             JsonVariant files_variant = files;
-            if (dir.endsWith("/")){
+            if (dir.endsWith("/")) {
                 addJsonArray(dir + file.getStringName(), &files_variant);
             } else {
                 addJsonArray(dir + "/" + file.getStringName(), &files_variant);
@@ -252,41 +230,14 @@ String generateJson() {
     DynamicJsonDocument doc(4096);
     JsonVariant variant = doc.to<JsonVariant>();
     addJsonArray("/", &variant);
-    //JsonArray files = doc.createNestedArray("Files");
 
-    // File dir = SD.open("/WWW/");
-
-    // while (true) {
-    //     File entry = dir.openNextFile();
-    //     if (!entry) {
-    //         break;
-    //     }
-
-    //     if (entry.isDirectory()) {
-    //         Serial.println("/");
-    //     } else {
-    //         Serial.println(entry.name());
-    //         JsonObject object = files.createNestedObject();
-    //         object["name"] = entry.name();
-    //         object["size"] = entry.size();
-    //     }
-    //     entry.close();
-    // }
-    // dir.close();
-
-
-
-    // for(int i = 0; i < 6; i++){
-    //     JsonObject object = files.createNestedObject();
-    //     object["name"] = "File " ;
-    //     object["size"] = i;
-    //     files.add(object);
-    // }
-
-    // serialize the object and send the result to Serial
     String Json = "";
     serializeJson(doc, Json);
     return Json;
+}
+
+void HttpServer::setBTmsg(String msg){
+    bt_msg = msg;
 }
 
 HttpServer::HttpServer(MemoryManager *memory2) {
@@ -327,53 +278,42 @@ HttpServer::HttpServer(MemoryManager *memory2) {
         file.close();
     });
 
-    server.on("/data.json", []() {
-        // File file = SD.open("WWW/FILES~1.JSO");
-        //  size_t sent = server.streamFile(file, "text/plain");
-        // file.close();
-        server.send(200, "text/plain", generateJson());
+    server.on("/upload.png", []() {
+        File file = memory->sd.open("WWW/icons/upload.png");
+        size_t sent = server.streamFile(file, "image/png");
+        file.close();
     });
 
+    server.on("/data.json",
+              []() { server.send(200, "text/plain", generateJson()); });
+
     server.on("/delete", []() {
-        for (uint8_t i = 0; i < server.args(); i++) {
-           // Serial.print("Parametr: ");
-           // Serial.print(server.argName(i));
-           // Serial.print(" wartość: ");
-           String filename = server.arg(i);
-            if (HttpServer::memory->sd.exists(
-                const_cast<char *>(filename.c_str()))) {
-                Serial.print("Deleting existing file \"");
-                Serial.print(const_cast<char *>(filename.c_str()));
-                Serial.println("\"");
-                HttpServer::memory->sd.remove(const_cast<char *>(filename.c_str()));
-            }
-        //   memory->sd.remove(const_cast<char *>(server.arg(i).c_str()));
+        if (server.hasArg("name") && server.arg("name") != NULL) {
+            String filename = server.arg("name");
+            removeFileIfExists(filename);
         }
-        server.sendHeader("Location",
-                          "/");  // Redirect the client to the success page
+
+        server.sendHeader("Location", "/");
         server.send(303);
     });
 
     server.on("/download", []() {
-        for (uint8_t i = 0; i < server.args(); i++) {
-           // Serial.print("Parametr: ");
-           // Serial.print(server.argName(i));
-           // Serial.print(" wartość: ");
-           String filename = server.arg(i);
+        if (server.hasArg("name") && server.arg("name") != NULL) {
+            String filename = server.arg("name");
+
             File download;
             download.open(const_cast<char *>(filename.c_str()));
             if (download) {
                 server.sendHeader("Content-Type", "text/text");
-                server.sendHeader("Content-Disposition", "attachment; filename=" + filename);
+                server.sendHeader("Content-Disposition",
+                                  "attachment; filename=" + filename);
                 server.sendHeader("Connection", "close");
                 server.streamFile(download, "application/octet-stream");
 
                 download.close();
             }
-        //   memory->sd.remove(const_cast<char *>(server.arg(i).c_str()));
         }
-        server.sendHeader("Location",
-                          "/");  // Redirect the client to the success page
+        server.sendHeader("Location", "/");
         server.send(303);
     });
 
@@ -402,9 +342,7 @@ HttpServer::HttpServer(MemoryManager *memory2) {
                     Serial.println("Update successfully completed. Rebooting.");
                     Serial.println("Reset in 4 seconds...");
 
-                    server.sendHeader(
-                        "Location",
-                        "/");  // Redirect the client to the success page
+                    server.sendHeader("Location", "/");
                     server.send(303);
                     delay(4000);
 
@@ -434,12 +372,7 @@ HttpServer::HttpServer(MemoryManager *memory2) {
               });
 
     server.on(
-        "/flash", HTTP_POST,  // if the client posts to the upload page
-        []() {
-            server.send(200);
-        },  // Send status 200 (OK) to tell the client we are ready to receive
-        handleFileFlash  // Receive and save the file
-    );
+        "/flash", HTTP_POST, []() { server.send(200); }, handleFileFlash);
 
     server.on("/upload", HTTP_GET,
               []() {  // if the client requests the upload page
@@ -449,19 +382,19 @@ HttpServer::HttpServer(MemoryManager *memory2) {
                   file.close();
               });
 
-    // server.on(
-    //     "/upload", HTTP_POST,  // if the client posts to the upload page
-    //     []() {
-    //         server.send(200);
-    //     },  // Send status 200 (OK) to tell the client we are ready to receive
-    //     handleFileUpload  // Receive and save the file
+    server.on(
+        "/upload", HTTP_POST, []() { server.send(200); }, handleFileUpload);
+    // server.on("/upload", HTTP_POST,  // Send status 200 (OK) to tell the
+    // client
+    //                                  // we are ready to receive
+    //           handleFileUploadData,
+    //           handleFileUpload  // Receive and save the file
     // );
-        server.on(
-        "/upload", HTTP_POST,  // Send status 200 (OK) to tell the client we are ready to receive
-        handleFileUploadData,handleFileUpload  // Receive and save the file
-    );
 
     // server.onNotFound(handleNotFound);
+
+     server.on("/readBT",
+              []() { server.send(200, "text/plain", bt_msg); });
 
     server.begin();
     Serial.println("HTTP server started");
