@@ -52,9 +52,9 @@
     <div id="page_content">
         <h1>Selfie Server 1.0</h1>
         <div class="tab">
-            <button class="tablinks" onclick="openCity(event, 'Files_tab')" id="defaultOpen">Files</button>
-            <button class="tablinks" onclick="openCity(event, 'BT_tab')">Bluetooth</button>
-            <button class="tablinks" onclick="openCity(event, 'Settings_tab')">Settings</button>
+            <button class="tablinks" onclick="openTab(event, 'Files_tab')" id="defaultOpen">Files</button>
+            <button class="tablinks" onclick="openTab(event, 'BT_tab')">Bluetooth</button>
+            <button class="tablinks" onclick="openTab(event, 'Settings_tab')">Settings</button>
         </div>
 
         <div id="Files_tab" class="tabcontent">
@@ -66,7 +66,7 @@
             <textarea id="BT" rows="4" cols="50" disabled>
         </textarea>
             <input type="text" id="msg_bt" name="msg" class="msg_bt" placeholder="Bluetooth command">
-            <button class="button_bt">Sent</button>
+            <button id="sent_bt_btn" class="button_bt">Sent</button>
             <button class="button_bt">Clear</button>
         </div>
 
@@ -79,7 +79,7 @@
         <script>
             var BT_timer;
 
-            function openCity(evt, cityName) {
+            function openTab(evt, tabName) {
                 var i, tabcontent, tablinks;
                 tabcontent = document.getElementsByClassName("tabcontent");
                 for (i = 0; i < tabcontent.length; i++) {
@@ -89,10 +89,11 @@
                 for (i = 0; i < tablinks.length; i++) {
                     tablinks[i].className = tablinks[i].className.replace(" active", "");
                 }
-                document.getElementById(cityName).style.display = "block";
+                document.getElementById(tabName).style.display = "block";
                 evt.currentTarget.className += " active";
 
-                if (cityName == "BT_tab") {
+                if (tabName == "BT_tab") {
+                    getData();
                     BT_timer = setInterval(function() {
                         getData();
                     }, 1000);
@@ -299,47 +300,16 @@
                 div.getElementsByClassName('file_size')[0].innerHTML = '[' + size + ' bytes]';
 
                 if (getExtension(div.name) == "bin" || getExtension(div.name) == "hex") {
-                    // var flash_file = document.createElement('img');
-                    // flash_file.setAttribute('class', 'files_icon');
-                    // flash_file.id = "flash_icon";
-                    // flash_file.alt = "flash";
-                    // flash_file.setAttribute('title', "flash");
-
-                    // if (page_full_loaded) {
-                    //     flash_file.src = "flash.png";
-                    // }
-
-                    // div.getElementsByClassName('file_settings')[0].appendChild(flash_file);
                     createIcon(div, "flash", "flash using this file");
                 }
 
-                var download_link = document.createElement('a');
-                download_link.setAttribute('href', "download?file=" + div.id + "&name=" + div.name);
+                var download_file_link = document.createElement('a');
+                download_file_link.setAttribute('href', "download?file=" + div.id + "&name=" + div.name);
 
-                var download_file = document.createElement('img');
-                download_file.setAttribute('class', 'files_icon');
-                download_file.id = "download_icon";
-                download_file.alt = "download";
-                if (page_full_loaded) {
-                    download_file.src = "download.png";
-                }
-                download_file.setAttribute('title', "download this file");
-
-                download_link.appendChild(download_file);
-                div.getElementsByClassName('file_settings')[0].appendChild(download_link);
-
-                //createIcon(div, "download", "download this file");
-
-
-
-
-
-                // var delete_file = document.createElement('img');
-                // delete_file.setAttribute('class', 'files_icon');
-                // delete_file.id = "delete_icon";
-                // delete_file.alt = "delete";
-                // delete_file.file_path = div.id;
-                // delete_file.setAttribute('title', "delete this file");
+                var download_file = createIcon(div, "download", "download this file");
+                var download_file_parent = download_file.parentNode;
+                download_file_parent.replaceChild(download_file_link, download_file);
+                download_file_link.appendChild(download_file);
 
                 createIcon(div, "delete", "delete this file").addEventListener('click', function() {
                     var Request = new XMLHttpRequest();
@@ -381,17 +351,6 @@
 
                 div.getElementsByClassName('file_settings')[0].appendChild(input);
 
-                // var mkdir = document.createElement('img');
-                // mkdir.setAttribute('class', 'files_icon');
-                // mkdir.id = "mkdir_icon";
-                // mkdir.alt = "mkdir";
-                // if (page_full_loaded) {
-                //     mkdir.src = "mkdir.png";
-                // }
-                // mkdir.setAttribute('title', "create new folder");
-                // mkdir.file_path = div.id;
-
-                //  createIcon("mkdir_icon", "mkdir", src)
 
                 createIcon(div, "mkdir", "create new folder").addEventListener('click', function() {
                     var new_dir_name = document.getElementById(this.file_path + '_mkdir_input').value;
@@ -415,36 +374,15 @@
 
                 });
 
-
-                //    div.getElementsByClassName('file_settings')[0].appendChild(mkdir);
-
                 var upload_file_link = document.createElement('a');
                 upload_file_link.setAttribute('href', "upload?dir=" + div.id);
 
-                var upload_file = document.createElement('img');
-                upload_file.setAttribute('class', 'files_icon');
-                upload_file.id = "upload_icon";
-                upload_file.alt = "upload";
-                if (page_full_loaded) {
-                    upload_file.src = "upload.png";
-                }
-                upload_file.setAttribute('title', "upload file");
-
+                var upload_file = createIcon(div, "upload", "upload file");
+                var upload_file_parent = upload_file.parentNode;
+                upload_file_parent.replaceChild(upload_file_link, upload_file);
                 upload_file_link.appendChild(upload_file);
-                div.getElementsByClassName('file_settings')[0].appendChild(upload_file_link);
-
-                //createIcon(div, "upload", "upload file");
 
                 if (div.name != "/") {
-                    // var delete_file = document.createElement('img');
-                    // delete_file.setAttribute('class', 'files_icon');
-                    // delete_file.id = "delete_icon";
-                    // delete_file.alt = "delete";
-                    // if (page_full_loaded) {
-                    //     delete_file.src = "delete.png";
-                    // }
-                    // delete_file.file_path = div.id;
-                    // delete_file.setAttribute('title', "delete this file");
                     createIcon(div, "delete", "delete this folder").addEventListener('click', function() {
                         if (document.querySelectorAll('[up_folder="' + this.file_path + '"]').length == 0) {
                             var Request = new XMLHttpRequest();
@@ -572,9 +510,19 @@
                 });
 
 
-                var Files_header = document.getElementById("Files_header");
-                Files_header.addEventListener('click', function() {
+                var files_header = document.getElementById("Files_header");
+                files_header.addEventListener('click', function() {
                     reloadFiles();
+                });
+
+                // sent_bt_msg_from_page
+
+                var sent_bt_btn = document.getElementById("sent_bt_btn");
+
+                sent_bt_btn.addEventListener('click', function() {
+                    var Request = new XMLHttpRequest();
+                    Request.open('GET', 'sent_bt_msg_from_page?value=' + document.getElementById("msg_bt").value + "%0D%0A");
+                    Request.send();
                 });
             }
 

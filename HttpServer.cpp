@@ -12,7 +12,7 @@ ESP32WebServer server(HTTP_PORT);
 
 MemoryManager *HttpServer::memory;
 
-String bt_console = "";
+String HttpServer::bt_console = "";
 
 void HomePage() {
     File file = HttpServer::memory->sd.open("WWW/index.html");
@@ -366,9 +366,18 @@ HttpServer::HttpServer(MemoryManager *memory2) {
     });
 
     // server.on("/network", handleRoot);
+    //  server.on("/sent_bt_msg_from_page", handleRoot);
 
-    server.on("/inline",
-              []() { server.send(200, "text/plain", "this works as well"); });
+    server.on("/sent_bt_msg_from_page", []() {
+        if (server.hasArg("value") && server.arg("value") != NULL) {
+            HttpServer::setBTmsg(server.arg("value"));
+            server.send(204);
+        } else {
+            server.send(500);
+        }
+    });
+
+    server.on("/inline", []() { server.send(200, "text/plain", "this works as well"); });
 
     server.on("/update", []() {
         File file = memory->sd.open("WWW/firmware.bin");
