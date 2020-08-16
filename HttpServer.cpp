@@ -12,7 +12,7 @@ ESP32WebServer server(HTTP_PORT);
 
 MemoryManager *HttpServer::memory;
 
-String bt_msg = "BT";
+String bt_console = "";
 
 void HomePage() {
     File file = HttpServer::memory->sd.open("WWW/index.html");
@@ -45,12 +45,24 @@ void HomePage() {
 //     // digitalWrite(led, 0);
 // }
 
-void removeFileIfExists(String filename) {
+uint8_t removeFileIfExists(String filename) {
     if (HttpServer::memory->sd.exists(const_cast<char *>(filename.c_str()))) {
         Serial.print("Deleting existing file ");
         Serial.println(filename);
-        HttpServer::memory->sd.remove(const_cast<char *>(filename.c_str()));
+        return HttpServer::memory->sd.remove(
+            const_cast<char *>(filename.c_str()));
     }
+    return false;
+}
+
+uint8_t removeDirIfExists(String filename) {
+    if (HttpServer::memory->sd.exists(const_cast<char *>(filename.c_str()))) {
+        Serial.print("Deleting existing dir ");
+        Serial.println(filename);
+        return HttpServer::memory->sd.rmdir(
+            const_cast<char *>(filename.c_str()));
+    }
+    return false;
 }
 
 File fsUploadFile;
@@ -236,8 +248,9 @@ String generateJson() {
     return Json;
 }
 
-void HttpServer::setBTmsg(String msg){
-    bt_msg = msg;
+void HttpServer::setBTmsg(String msg) {
+    bt_console += "<<< " + msg;
+    bt_console += ">>> OK\n";
 }
 
 HttpServer::HttpServer(MemoryManager *memory2) {
@@ -288,25 +301,60 @@ HttpServer::HttpServer(MemoryManager *memory2) {
               []() { server.send(200, "text/plain", generateJson()); });
 
     server.on("/delete", []() {
-        if (server.hasArg("name") && server.arg("name") != NULL) {
+        uint8_t success_flag = false;
+        if (server.hasArg("name") && server.arg("name") != NULL &&
+            server.hasArg("type") && server.arg("type") != NULL) {
             String filename = server.arg("name");
-            removeFileIfExists(filename);
+            if (server.arg("type") == "file") {
+                if (removeFileIfExists(filename)) {
+                    success_flag = true;
+                }
+
+            } else if (server.arg("type") == "dir") {
+                if (removeDirIfExists(filename)) {
+                    success_flag = true;
+                }
+            }
+        }
+        if (success_flag) {
+            server.send(204);
+        } else {
+            server.send(500);
+        }
+    });
+
+    server.on("/mkdir", []() {
+        if (server.hasArg("name") && server.arg("name") != NULL &&
+            server.hasArg("dir") && server.arg("dir") != NULL) {
+            String filename = server.arg("dir") + server.arg("name");
+            if (HttpServer::memory->sd.mkdir(
+                    const_cast<char *>(filename.c_str()), false)) {
+                server.send(204);
+            } else {
+                server.send(500);
+            }
+        } else {
+            server.send(500);
         }
 
-        server.sendHeader("Location", "/");
-        server.send(303);
+        // server.sendHeader("Location", "/");
+        // server.send(303);
     });
 
     server.on("/download", []() {
-        if (server.hasArg("name") && server.arg("name") != NULL) {
-            String filename = server.arg("name");
+        if (server.hasArg("file") && server.arg("file") != NULL) {
+            String filename = server.arg("file");
+            String download_name = filename;
+            if (server.hasArg("name") && server.arg("name") != NULL) {
+                download_name = server.arg("name");
+            }
 
             File download;
             download.open(const_cast<char *>(filename.c_str()));
             if (download) {
                 server.sendHeader("Content-Type", "text/text");
                 server.sendHeader("Content-Disposition",
-                                  "attachment; filename=" + filename);
+                                  "attachment; filename=" + download_name);
                 server.sendHeader("Connection", "close");
                 server.streamFile(download, "application/octet-stream");
 
@@ -393,8 +441,14 @@ HttpServer::HttpServer(MemoryManager *memory2) {
 
     // server.onNotFound(handleNotFound);
 
-     server.on("/readBT",
-              []() { server.send(200, "text/plain", bt_msg); });
+    server.on("/reboot", []() {
+        // server.sendHeader("Location", "/");
+        // server.send(303);
+        server.send(204);
+        ESP.restart();
+    });
+
+    server.on("/readBT", []() { server.send(200, "text/plain", bt_console); });
 
     server.begin();
     Serial.println("HTTP server started");

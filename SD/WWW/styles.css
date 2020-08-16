@@ -60,6 +60,15 @@ body {
     background-color: #303030;
 }
 
+textarea {
+    color: white;
+    background-color: black;
+    width: 100%;
+    min-height: 300px;
+    resize: none;
+    width: 99%;
+}
+
 [is_hiden=true] {
     -webkit-animation: out 700ms ease both;
     animation: out 700ms ease both;
@@ -82,6 +91,10 @@ body {
 
 [is_opened_folder=true] {
     background-color: #FFFFFF;
+}
+
+[type=dir] {
+    cursor: pointer;
 }
 
 [type=dir] .file_settings {
@@ -122,6 +135,7 @@ body {
 .files_icon {
     padding-left: 10px;
     height: 17px;
+    cursor: pointer;
 }
 
 ul {
@@ -298,6 +312,25 @@ button {
     font-size: 70%;
 }
 
+.button_bt {
+    border-radius: 0.2em;
+    background: white;
+    padding: 0;
+    width: 12%;
+    color: black;
+    font-size: 80%;
+    margin-top: 8px;
+    padding: 0.1em 0.1em;
+}
+
+.msg_bt {
+    width: 74%;
+    color: white;
+    background-color: black;
+    margin: 0;
+    padding: 0.2em 0.2em;
+}
+
 a {
     font-size: 75%;
 }
@@ -306,7 +339,7 @@ p {
     font-size: 75%;
 }
 
-input[type=text] {
+.new_dir_name[type=text] {
     padding-top: 0px;
     width: 20%;
     border: 2px solid gray;
@@ -315,11 +348,11 @@ input[type=text] {
     transition: width 0.4s ease-in-out;
 }
 
-input[type=text]:focus {
+.new_dir_name[type=text]:focus {
     width: 40%;
 }
 
-::-webkit-input-placeholder {
+ ::-webkit-input-placeholder {
     text-align: center;
 }
 

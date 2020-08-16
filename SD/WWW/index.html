@@ -21,58 +21,6 @@
     <title>ESP32</title>
 
     <style>
-        @-webkit-keyframes in {
-            0% {
-                -webkit-transform: scale(0) rotate(12deg);
-                opacity: 0;
-                visibility: hidden;
-            }
-            100% {
-                -webkit-transform: scale(1) rotate(0);
-                opacity: 1;
-                visibility: visible;
-            }
-        }
-        
-        @keyframes in {
-            0% {
-                transform: scale(0) rotate(12deg);
-                opacity: 0;
-                visibility: hidden;
-            }
-            100% {
-                transform: scale(1) rotate(0);
-                opacity: 1;
-                visibility: visible;
-            }
-        }
-        
-        @-webkit-keyframes out {
-            0% {
-                -webkit-transform: scale(1) rotate(0);
-                opacity: 1;
-                visibility: visible;
-            }
-            100% {
-                -webkit-transform: scale(0) rotate(-12deg);
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-        
-        @keyframes out {
-            0% {
-                transform: scale(1) rotate(0);
-                opacity: 1;
-                visibility: visible;
-            }
-            100% {
-                transform: scale(0) rotate(-12deg);
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-        
         body {
             max-width: 65%;
             margin: 0 auto;
@@ -83,748 +31,580 @@
             background-color: #303030;
         }
         
-        [is_hiden=true] {
-            -webkit-animation: out 700ms ease both;
-            animation: out 700ms ease both;
+        #loading_page_div {
+            color: white;
         }
         
-        [is_hiden=false] {
-            -webkit-animation: in 700ms ease both;
-            animation: in 700ms ease both;
-        }
-        
-        .file {
-            background-color: #ddceee;
-            text-align: center;
-            padding: 2px;
-            ;
-            border-radius: 0.375em;
-            margin: 4px;
-            transition: height 1s, width 1s, padding 1s, visibility 1s, opacity 0.5s ease-out;
-        }
-        
-        [is_opened_folder=true] {
-            background-color: #FFFFFF;
-        }
-        
-        [type=dir] .file_settings {
-            opacity: 0;
-        }
-        
-        [type=dir] a {
+        #page_content {
             display: none;
-        }
-        
-        [is_opened_folder=true] .file_settings {
-            opacity: 1;
-        }
-        
-        [is_opened_folder=true] a {
-            display: inline;
-        }
-        
-        [is_opened_folder=true] .file_size {
-            opacity: 0;
-        }
-        
-        .file_name {
-            width: 50%;
-            float: left;
-        }
-        
-        .file_size {
-            width: 25%;
-            float: left;
-        }
-        
-        .file_settings {
-            width: 25%;
-            margin-left: 75%;
-        }
-        
-        .files_icon {
-            padding-left: 10px;
-            height: 17px;
-        }
-        
-        ul {
-            list-style-type: none;
-            margin: 0.1em;
-            margin-top: 15px;
-            padding: 0;
-            border-radius: 0.375em;
-            overflow: hidden;
-            background-color: #fffffff0;
-            font-size: 1em;
-        }
-        
-        li {
-            float: left;
-            border-radius: 0.375em;
-            border-right: 0.06em solid #bbb;
-        }
-        
-        last-child {
-            border-right: none;
-            font-size: 85%
-        }
-        
-        li a {
-            display: block;
-            border-radius: 0.375em;
-            padding: 0.44em 0.44em;
-            text-decoration: none;
-            font-size: 85%;
-            color: black;
-        }
-        
-        li a:hover {
-            background-color: #EAE3EA;
-            border-radius: 0.375em;
-            font-size: 85%
-        }
-        
-        section {
-            font-size: 0.88em;
-        }
-        
-        h1 {
-            color: white;
-            border-radius: 0.5em;
-            font-size: 1em;
-            padding: 0.2em 0.2em;
-            background: #c60f0f;
-        }
-        
-        h2 {
-            color: orange;
-            font-size: 1.0em;
-        }
-        
-        h3 {
-            font-size: 0.8em;
-        }
-        
-        table {
-            font-family: arial, sans-serif;
-            font-size: 0.9em;
-            border-collapse: collapse;
-            width: 85%;
-        }
-        
-        th,
-        td {
-            border: 0.06em solid #dddddd;
-            text-align: left;
-            padding: 0.3em;
-            border-bottom: 0.06em solid #dddddd;
-        }
-        
-        tr:nth-child(odd) {
-            background-color: #eeeeee;
-        }
-        
-        .rcorners_n {
-            border-radius: 0.5em;
-            background: #558ED5;
-            padding: 0.3em 0.3em;
-            width: 20%;
-            color: white;
-            font-size: 75%;
-        }
-        
-        .rcorners_m {
-            border-radius: 0.5em;
-            background: #558ED5;
-            padding: 0.3em 0.3em;
-            width: 50%;
-            color: white;
-            font-size: 75%;
-        }
-        
-        .rcorners_w {
-            border-radius: 0.5em;
-            background: #558ED5;
-            padding: 0.3em 0.3em;
-            width: 70%;
-            color: white;
-            font-size: 75%;
-        }
-        
-        .column {
-            float: left;
-            width: 50%;
-            height: 45%;
-        }
-        
-        .row:after {
-            content: '';
-            display: table;
-            clear: both;
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
-        
-        footer {
-            background-color: #c60f0f;
-            text-align: center;
-            padding: 0.3em 0.3em;
-            border-radius: 0.375em;
-            font-size: 60%;
-            color: white;
-        }
-        
-        button {
-            border-radius: 0.5em;
-            background: #c60f0f;
-            padding: 0.3em 0.3em;
-            width: 20%;
-            color: white;
-            font-size: 130%;
-        }
-        
-        .buttons {
-            border-radius: 0.5em;
-            background: #751b1b;
-            padding: 0.3em 0.3em;
-            width: 15%;
-            color: white;
-            font-size: 80%;
-        }
-        
-        .buttonsm {
-            border-radius: 0.5em;
-            background: #751b1b;
-            padding: 0.3em 0.3em;
-            width: 9%;
-            color: white;
-            font-size: 70%;
-        }
-        
-        .buttonm {
-            border-radius: 0.5em;
-            background: #751b1b;
-            padding: 0.3em 0.3em;
-            width: 15%;
-            color: white;
-            font-size: 70%;
-        }
-        
-        .buttonw {
-            border-radius: 0.5em;
-            background: #751b1b;
-            padding: 0.3em 0.3em;
-            width: 40%;
-            color: white;
-            font-size: 70%;
-        }
-        
-        a {
-            font-size: 75%;
-        }
-        
-        p {
-            font-size: 75%;
-        }
-        
-        input[type=text] {
-            padding-top: 0px;
-            width: 20%;
-            border: 2px solid gray;
-            border-radius: 4px;
-            margin-top: 0px;
-            transition: width 0.4s ease-in-out;
-        }
-        
-        input[type=text]:focus {
-            width: 40%;
-        }
-        
-         ::-webkit-input-placeholder {
-            text-align: center;
-        }
-        
-         :-moz-placeholder {
-            /* Firefox 18- */
-            text-align: center;
-        }
-        
-         ::-moz-placeholder {
-            /* Firefox 19+ */
-            text-align: center;
-        }
-        
-         :-ms-input-placeholder {
-            text-align: center;
-        }
-        /* Style the tab */
-        
-        .tab {
-            overflow: hidden;
-            background-color: #202020;
-            border-radius: 0.5em 0.5em 0.0em 0.0em;
-            padding: 0.3em 0.3em;
-        }
-        /* Style the buttons inside the tab */
-        
-        .tab button {
-            background-color: inherit;
-            float: left;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            transition: 0.3s;
-            font-size: 17px;
-            margin-right: 7px
-        }
-        /* Change background color of buttons on hover */
-        
-        .tab button:hover {
-            background-color: #930b0b;
-        }
-        /* Create an active/current tablink class */
-        
-        .tab button.active {
-            background-color: #c60f0f;
-        }
-        /* Style the tab content */
-        
-        .tabcontent {
-            display: none;
-            border: 7px solid #202020;
-            padding: 6px 12px;
-            border-top: none;
         }
     </style>
 
 </head>
 
+
+
 <body>
-    <h1>Selfie Server 1.0</h1>
-    <div class="tab">
-        <button class="tablinks" onclick="openCity(event, 'Files_tab')" id="defaultOpen">Files</button>
-        <button class="tablinks" onclick="openCity(event, 'BT_tab')">Bluetooth</button>
-        <button class="tablinks" onclick="openCity(event, 'Settings_tab')">Settings</button>
+    <div id="loading_page_div">
+        Wait, page is loading...
     </div>
 
-    <div id="Files_tab" class="tabcontent">
-        <h1>Files</h1>
-        <div id='files'></div>
-    </div>
+    <div id="page_content">
+        <h1>Selfie Server 1.0</h1>
+        <div class="tab">
+            <button class="tablinks" onclick="openCity(event, 'Files_tab')" id="defaultOpen">Files</button>
+            <button class="tablinks" onclick="openCity(event, 'BT_tab')">Bluetooth</button>
+            <button class="tablinks" onclick="openCity(event, 'Settings_tab')">Settings</button>
+        </div>
 
-    <div id="BT_tab" class="tabcontent">
-        <h1 id="BT">BT</h1>
-    </div>
+        <div id="Files_tab" class="tabcontent">
+            <h1 id="Files_header">Files</h1>
+            <div id='files'></div>
+        </div>
 
-    <div id="Settings_tab" class="tabcontent">
-        <a href='/flash'><button>Flash ESP32</button></a>
-        <button id="btn">Remove all</button>
-    </div>
+        <div id="BT_tab" class="tabcontent">
+            <textarea id="BT" rows="4" cols="50" disabled>
+        </textarea>
+            <input type="text" id="msg_bt" name="msg" class="msg_bt" placeholder="Bluetooth command">
+            <button class="button_bt">Sent</button>
+            <button class="button_bt">Clear</button>
+        </div>
 
-    <script>
-        var BT_timer;
+        <div id="Settings_tab" class="tabcontent">
+            <a href='/flash'><button>Flash ESP32</button></a>
+            <button id="reboot_esp_button">Restart ESP32</button>
+            <button id="btn">Remove all</button>
+        </div>
 
-        function openCity(evt, cityName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(cityName).style.display = "block";
-            evt.currentTarget.className += " active";
+        <script>
+            var BT_timer;
 
-            if (cityName == "BT_tab") {
-                BT_timer = setInterval(function() {
-                    // Call a function repetatively with 2 Second interval
-                    getData();
-                }, 2000); //2000mSeconds update rate
-                function getData() {
-                    var xhttp = new XMLHttpRequest();
-                    xhttp.onreadystatechange = function() {
-                        if (this.readyState == 4 && this.status == 200) {
-                            document.getElementById("BT").innerHTML =
-                                this.responseText;
-                        }
-                    };
-                    xhttp.open("GET", "readBT", true);
-                    xhttp.send();
+            function openCity(evt, cityName) {
+                var i, tabcontent, tablinks;
+                tabcontent = document.getElementsByClassName("tabcontent");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
                 }
-            } else {
-                clearInterval(BT_timer);
+                tablinks = document.getElementsByClassName("tablinks");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+                document.getElementById(cityName).style.display = "block";
+                evt.currentTarget.className += " active";
+
+                if (cityName == "BT_tab") {
+                    BT_timer = setInterval(function() {
+                        getData();
+                    }, 1000);
+
+                    function getData() {
+                        var xhttp = new XMLHttpRequest();
+                        xhttp.onreadystatechange = function() {
+                            if (this.readyState == 4 && this.status == 200) {
+                                document.getElementById("BT").innerHTML =
+                                    this.responseText;
+                            }
+                        };
+                        xhttp.open("GET", "readBT", true);
+                        xhttp.send();
+                    }
+                } else {
+                    clearInterval(BT_timer);
+                }
             }
-        }
 
-        document.getElementById("defaultOpen").click();
-    </script>
+            document.getElementById("defaultOpen").click();
+        </script>
 
-    <ul>
-        <li><a href='/'>Home</a></li>
-        <li><a href='/download'>Download</a></li>
-        <li><a href='/upload'>Upload</a></li>
-    </ul>
-    <footer>&copy; Marek Knosala 2020 ;)</footer>
-
+        <ul>
+            <li><a href='/'>Home</a></li>
+            <li><a href='/download'>Download</a></li>
+            <li><a href='/upload'>Upload</a></li>
+        </ul>
+        <footer>&copy; Marek Knosala 2020 ;)</footer>
 
 
 
-    <script>
-        var btn = document.getElementById('btn');
 
-        btn.addEventListener('click', function() {
-            var Request = new XMLHttpRequest();
-            Request.open('GET', 'data.json');
-            Request.onload = function() {
-                var Data = JSON.parse(Request.responseText);
-                console.log(Data);
-                alert(JSON.stringify(Data));
-            };
-            Request.send();
+        <script>
+            var page_full_loaded = false;
 
-        });
+            function deleteFileFromHTML(file) {
+                file.style.display = "none";
+                file.parentNode.removeChild(file);
+            }
 
-        function hideFile(file) {
-            file.style.display = "none";
-        }
+            function deleteFile(file) {
+                file.style.visibility = "hidden";
+                file.setAttribute('is_hiden', "true");
+                file.setAttribute('is_opened_folder', "false");
 
-        function showOpenedFiles(dir) {
-            var all_files = document.querySelectorAll('[class="file"]');
-            for (i = 0; i < all_files.length; i++) {
-                // if(files[i].style.display == "none"){
+                setTimeout(deleteFileFromHTML.bind(null, file), 700);
+            }
 
-                all_files[i].style.visibility = "hidden";
-                all_files[i].setAttribute('is_hiden', "true");
-                all_files[i].setAttribute('is_opened_folder', "false");
-                setTimeout(hideFile.bind(null, all_files[i]), 700);
-                // } else {
-                //     files[i].style.display = "none";
+            function deleteAllFiles() {
+                var all_files = document.querySelectorAll('[class="file"]');
+                for (i = 0; i < all_files.length; i++) {
+                    deleteFile(all_files[i]);
+                }
+            }
+
+            function hideFile(file) {
+                file.style.display = "none";
+            }
+
+            function makeFileInvisible(file) {
+                file.style.visibility = "hidden";
+                file.setAttribute('is_hiden', "true");
+                file.setAttribute('is_opened_folder', "false");
+                setTimeout(hideFile.bind(null, file), 700);
+            }
+
+            function makeAllFilesInvisible() {
+                var all_files = document.querySelectorAll('[class="file"]');
+                for (i = 0; i < all_files.length; i++) {
+                    makeFileInvisible(all_files[i]);
+                }
+            }
+
+            function showFolder(dir) {
+                makeAllFilesInvisible();
+                setTimeout(showFiles.bind(null, dir), 700);
+            }
+
+            function showFiles(dir) {
+
+                //  document.getElementById("upload_button").href = "/upload?dir=" + dir;
+
+
+                var exists = document.querySelector('[id="' + dir + '"]') !== null;
+                if (exists) {
+                    document.querySelector('[id="' + dir + '"]').style.display = "block";
+                    document.querySelector('[id="' + dir + '"]').style.visibility = "visible";
+                    document.querySelector('[id="' + dir + '"]').setAttribute('is_hiden', "false");
+                    document.querySelector('[id="' + dir + '"]').setAttribute('is_opened_folder', "true");
+                }
+
+
+                var selected_files = document.querySelectorAll('[up_folder="' + dir + '"]');
+                for (i = 0; i < selected_files.length; i++) {
+                    // if(files[i].style.display == "none"){
+                    selected_files[i].style.display = "block";
+                    selected_files[i].style.visibility = "visible";
+                    selected_files[i].setAttribute('is_hiden', "false");
+                    // } else {
+                    //     files[i].style.display = "none";
+                    // }
+                }
+
+                // all_files = document.querySelectorAll('[class="file"]');
+                // for (i = 0; i < all_files.length; i++) {
+                //     if (all_files[i].style.visibility == "hidden") {
+                //         setTimeout(hideFile.bind(null, all_files[i]), 700);
+                //     }
                 // }
 
-            }
-            setTimeout(showFiles.bind(null, dir), 700);
-
-        }
-
-        function showFiles(dir) {
-
-            //  document.getElementById("upload_button").href = "/upload?dir=" + dir;
 
 
-            var exists = document.querySelector('[id="' + dir + '"]') !== null;
-            if (exists) {
-                document.querySelector('[id="' + dir + '"]').style.display = "block";
-                document.querySelector('[id="' + dir + '"]').style.visibility = "visible";
-                document.querySelector('[id="' + dir + '"]').setAttribute('is_hiden', "false");
-                document.querySelector('[id="' + dir + '"]').setAttribute('is_opened_folder', "true");
             }
 
 
-            var selected_files = document.querySelectorAll('[up_folder="' + dir + '"]');
-            for (i = 0; i < selected_files.length; i++) {
-                // if(files[i].style.display == "none"){
-                selected_files[i].style.display = "block";
-                selected_files[i].style.visibility = "visible";
-                selected_files[i].setAttribute('is_hiden', "false");
-                // } else {
-                //     files[i].style.display = "none";
-                // }
+            var showFilesEvenetLisner = function(event, dir) {
+
+                var file_dir = String(event, dir);
+
+
+                var is_open = document.querySelector('[id="' + file_dir + '"]').getAttribute('is_opened_folder');
+                if (is_open == "false") {
+                    showFolder(file_dir);
+                } else {
+                    var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
+                    showFolder(up_dir);
+                }
             }
 
-            // all_files = document.querySelectorAll('[class="file"]');
-            // for (i = 0; i < all_files.length; i++) {
-            //     if (all_files[i].style.visibility == "hidden") {
-            //         setTimeout(hideFile.bind(null, all_files[i]), 700);
-            //     }
-            // }
-
-
-
-        }
-
-
-        var showFilesEvenetLisner = function(event, dir) {
-
-            var file_dir = String(event, dir);
-
-
-            var is_open = document.querySelector('[id="' + file_dir + '"]').getAttribute('is_opened_folder');
-            if (is_open == "false") {
-                showOpenedFiles(file_dir);
-            } else {
-                var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
-                showOpenedFiles(up_dir);
+            function getExtension(fileName) {
+                return fileName.substr(fileName.lastIndexOf('.') + 1);
             }
-            // var exists = document.querySelector('[up_folder="' + file_dir + '"]') !== null;
-            // if (exists) {
-            //     if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "hidden") {
-            //         showOpenedFiles(file_dir);
-            //     } else if (document.querySelector('[up_folder="' + file_dir + '"]').style.visibility == "visible") {
-            //         var up_dir = document.querySelector('[id="' + file_dir + '"]').getAttribute('up_folder');
-            //         showOpenedFiles(up_dir);
-            //     }
-            // }
-        }
-
-        function getExtension(fileName) {
-            return fileName.substr(fileName.lastIndexOf('.') + 1);
-        }
-
-
-        var download_image_timer;
-        var flash_image_timer;
-        var mkdir_image_timer;
-        var delete_image_timer;
-        var upload_image_timer;
-
-        function startReloadDownload(pThis) {
-            download_image_timer = setInterval(reloadImage(), 1000, pThis);
-        }
-
-        function stopReloadDownload(pThis) {
-            clearInterval(download_image_timer);
-        }
-
-        function startReloadFlash(pThis) {
-            flash_image_timer = setInterval(reloadImage(), 1000, pThis);
-        }
-
-        function stopReloadFlash(pThis) {
-            clearInterval(flash_image_timer);
-        }
-
-        function startReloadMkdir(pThis) {
-            mkdir_image_timer = setInterval(reloadImage(), 1000, pThis);
-        }
-
-        function stopReloadMkdir(pThis) {
-            clearInterval(mkdir_image_timer);
-        }
-
-        function startReloadDelete(pThis) {
-            delete_image_timer = setInterval(reloadImage(), 1000, pThis);
-        }
-
-        function stopReloadDelete(pThis) {
-            clearInterval(delete_image_timer);
-        }
-
-
-        function startReloadUpload(pThis) {
-            upload_image_timer = setInterval(reloadImage(), 1000, pThis);
-        }
-
-        function stopReloadUpload(pThis) {
-            clearInterval(upload_image_timer);
-        }
-
-
-
-        function reloadImage(pThis) {
-            pThis.onerror = null;
-            pThis.src = pThis.src;
-        }
 
 
 
 
+            function reloadImage(pThis) {
+                pThis.onerror = null;
+                pThis.src = pThis.src;
+            }
 
-        function generateFiles(items, dir = "") {
-            for (var i = 0; i < items.length; i++) {
+            function createIcon(div, alt, title) {
+                var icon = document.createElement('img');
+                icon.setAttribute('class', 'files_icon');
+                icon.id = alt + "_icon";
+                icon.alt = alt;
+                icon.file_path = div.id;
+                icon.setAttribute('title', title);
+
+                if (page_full_loaded) {
+                    icon.src = alt + ".png";
+                }
+
+                return div.getElementsByClassName('file_settings')[0].appendChild(icon);
+            }
+
+
+
+            function createFileDiv(dir, name) {
                 var div = document.createElement('div');
+                div.name = name;
                 div.setAttribute('class', 'file');
                 div.setAttribute('title', dir);
                 div.setAttribute('up_folder', dir);
                 div.setAttribute('is_opened_folder', "false");
-                if (items[i].type == "Dir") {
-                    div.setAttribute('type', "dir");
-                }
-                if (items[i].type == "File") {
-                    div.setAttribute('type', "file");
-                }
 
                 var id = "";
                 if (dir == "/" || dir == "") {
-                    id = dir + items[i].name;
+                    id = dir + name;
                 } else {
-                    id = dir + "/" + items[i].name;
+                    id = dir + "/" + name;
                 }
 
-                div.setAttribute('id', id);
+                div.id = id;
                 div.style.display = "none";
                 div.style.visibility = "hidden";
                 div.setAttribute('is_hiden', "true");
 
 
-
-                const file_name = document.createElement('div');
+                var file_name = document.createElement('div');
                 file_name.setAttribute('class', 'file_name');
-                file_name.innerHTML = items[i].name;
-
-                if (items[i].type == "Dir" && items[i].name != "/") {
-                    file_name.addEventListener('click', showFilesEvenetLisner.bind(event, id), false);
-                }
+                file_name.innerHTML = name;
 
                 div.appendChild(file_name);
 
-
                 var file_size = document.createElement('div');
                 file_size.setAttribute('class', 'file_size');
-
-                if (items[i].type == "File") {
-                    file_size.innerHTML = '[' + items[i].size + ' bytes]';
-                }
-
-                if (items[i].type == "Dir") {
-                    file_size.innerHTML = '[' + items[i].Files.length + ' files]';
-                }
                 div.appendChild(file_size)
-
-
 
                 var file_settings = document.createElement('div');
                 file_settings.setAttribute('class', 'file_settings');
                 file_settings.innerHTML = '';
-
-
-                if (items[i].type == "File") {
-                    if (getExtension(items[i].name) == "bin" || getExtension(items[i].name) == "hex") {
-                        var flash_file = document.createElement('img');
-                        flash_file.setAttribute('class', 'files_icon');
-                        flash_file.id = "flash_icon";
-                        flash_file.src = "flash.png";
-                        flash_file.alt = "flash";
-                        flash_file.setAttribute('title', "flash");
-                        flash_file.setAttribute('onerror', "startReloadFlash(this);");
-                        flash_file.setAttribute('onload', "stopReloadFlash(this);");
-
-                        file_settings.appendChild(flash_file);
-                    }
-                }
-
-
-                if (items[i].type == "File") {
-                    var download_link = document.createElement('a');
-                    download_link.setAttribute('href', "download?name=" + id);
-
-                    var download_file = document.createElement('img');
-                    download_file.setAttribute('class', 'files_icon');
-                    download_file.id = "download_icon";
-                    download_file.src = "download.png";
-                    download_file.alt = "download";
-                    download_file.setAttribute('title', "download this file");
-                    download_file.setAttribute('onerror', "startReloadDownload(this);");
-                    download_file.setAttribute('onload', "stopReloadDownload(this);");
-
-                    download_link.appendChild(download_file);
-                    file_settings.appendChild(download_link);
-                }
-
-                if (items[i].type == "Dir") {
-                    var input = document.createElement("input");
-                    input.id = "mkdir_input";
-                    input.type = "text";
-                    input.maxLength = "16";
-                    input.placeholder = "name";
-
-                    var mkdir_link = document.createElement('a');
-                    mkdir_link.setAttribute('href', "mkdir?name=");
-
-                    var mkdir = document.createElement('img');
-                    mkdir.setAttribute('class', 'files_icon');
-                    mkdir.id = "mkdir_icon";
-                    mkdir.src = "mkdir.png";
-                    mkdir.alt = "mkdir";
-                    mkdir.setAttribute('title', "create new folder");
-                    mkdir.setAttribute('onerror', "startReloadMkdir(this);");
-                    mkdir.setAttribute('onload', "stopReloadMkdir(this);");
-                    mkdir_link.appendChild(mkdir);
-
-                    file_settings.appendChild(input);
-                    file_settings.appendChild(mkdir_link);
-
-                    var upload_file_link = document.createElement('a');
-                    upload_file_link.setAttribute('href', "upload?dir=" + id);
-
-                    var upload_file = document.createElement('img');
-                    upload_file.setAttribute('class', 'files_icon');
-                    upload_file.id = "upload_icon";
-                    upload_file.src = "upload.png";
-                    upload_file.alt = "upload";
-                    upload_file.setAttribute('title', "upload file");
-                    upload_file.setAttribute('onerror', "startReloadUpload(this);");
-                    upload_file.setAttribute('onload', "stopReloadUpload(this);");
-                    upload_file_link.appendChild(upload_file);
-
-                    file_settings.appendChild(upload_file_link);
-                }
-
-
-
-                // ?arg1=3&arg2=4&arg3="arduino"
-
-                var delete_link = document.createElement('a');
-                delete_link.setAttribute('href', "delete?name=" + id);
-                //   delete_link.src = "delete?name=" + items[i].name;
-
-                var delete_file = document.createElement('img');
-                delete_file.setAttribute('class', 'files_icon');
-                delete_file.id = "delete_icon";
-                delete_file.src = "delete.png";
-                delete_file.alt = "delete";
-                delete_file.setAttribute('title', "delete this file");
-                delete_file.setAttribute('onerror', "startReloadDelete(this);");
-                delete_file.setAttribute('onload', "stopReloadDelete(this);");
-
-                delete_link.appendChild(delete_file);
-
-
-                file_settings.appendChild(delete_link);
-
                 div.appendChild(file_settings);
 
+                return div
+            }
 
+
+            function createFile(dir, name, size) {
+                var div = createFileDiv(dir, name);
+
+                div.setAttribute('type', "file");
+                div.getElementsByClassName('file_size')[0].innerHTML = '[' + size + ' bytes]';
+
+                if (getExtension(div.name) == "bin" || getExtension(div.name) == "hex") {
+                    // var flash_file = document.createElement('img');
+                    // flash_file.setAttribute('class', 'files_icon');
+                    // flash_file.id = "flash_icon";
+                    // flash_file.alt = "flash";
+                    // flash_file.setAttribute('title', "flash");
+
+                    // if (page_full_loaded) {
+                    //     flash_file.src = "flash.png";
+                    // }
+
+                    // div.getElementsByClassName('file_settings')[0].appendChild(flash_file);
+                    createIcon(div, "flash", "flash using this file");
+                }
+
+                var download_link = document.createElement('a');
+                download_link.setAttribute('href', "download?file=" + div.id + "&name=" + div.name);
+
+                var download_file = document.createElement('img');
+                download_file.setAttribute('class', 'files_icon');
+                download_file.id = "download_icon";
+                download_file.alt = "download";
+                if (page_full_loaded) {
+                    download_file.src = "download.png";
+                }
+                download_file.setAttribute('title', "download this file");
+
+                download_link.appendChild(download_file);
+                div.getElementsByClassName('file_settings')[0].appendChild(download_link);
+
+                //createIcon(div, "download", "download this file");
+
+
+
+
+
+                // var delete_file = document.createElement('img');
+                // delete_file.setAttribute('class', 'files_icon');
+                // delete_file.id = "delete_icon";
+                // delete_file.alt = "delete";
+                // delete_file.file_path = div.id;
+                // delete_file.setAttribute('title', "delete this file");
+
+                createIcon(div, "delete", "delete this file").addEventListener('click', function() {
+                    var Request = new XMLHttpRequest();
+                    Request.open('GET', 'delete?name=' + this.file_path + "&type=file");
+                    Request.file_path = this.file_path;
+                    Request.onload = function() {
+                        if (Request.status == 204) {
+                            deleteFile(document.getElementById(this.file_path));
+                        } else {
+                            alert("Something went wrong with deleting file " + this.file_path);
+                        }
+                    };
+                    Request.send();
+
+                });
+
+
+
+
+                //  div.getElementsByClassName('file_settings')[0].appendChild(delete_file);
                 document.getElementById("files").appendChild(div);
-                if (items[i].type == "Dir") {
-                    generateFiles(items[i].Files, id, false);
+            }
+
+            function createDir(dir, name, files_lenght_in_dir) {
+                var div = createFileDiv(dir, name);
+
+                if (div.name != "/") {
+                    div.getElementsByClassName('file_name')[0].addEventListener('click', showFilesEvenetLisner.bind(event, div.id), false);
+                }
+                div.setAttribute('type', "dir");
+                div.getElementsByClassName('file_size')[0].innerHTML = '[' + files_lenght_in_dir + ' files]';
+
+                var input = document.createElement("input");
+                input.id = div.id + "_mkdir_input";
+                input.type = "text";
+                input.maxLength = "16";
+                input.placeholder = "name";
+                input.setAttribute('class', 'new_dir_name');
+
+                div.getElementsByClassName('file_settings')[0].appendChild(input);
+
+                // var mkdir = document.createElement('img');
+                // mkdir.setAttribute('class', 'files_icon');
+                // mkdir.id = "mkdir_icon";
+                // mkdir.alt = "mkdir";
+                // if (page_full_loaded) {
+                //     mkdir.src = "mkdir.png";
+                // }
+                // mkdir.setAttribute('title', "create new folder");
+                // mkdir.file_path = div.id;
+
+                //  createIcon("mkdir_icon", "mkdir", src)
+
+                createIcon(div, "mkdir", "create new folder").addEventListener('click', function() {
+                    var new_dir_name = document.getElementById(this.file_path + '_mkdir_input').value;
+                    if (new_dir_name) {
+                        var request_url = 'mkdir?name=' + new_dir_name + '&dir=' + this.file_path;
+
+                        var Request = new XMLHttpRequest();
+                        Request.open('GET', request_url);
+                        Request.file_path = this.file_path;
+                        Request.new_dir_name = new_dir_name;
+                        Request.onload = function() {
+                            if (Request.status == 204) {
+                                createDir(this.file_path, this.new_dir_name, 0);
+                                showFolder(this.file_path);
+                            } else {
+                                alert("Something went wrong with creating file " + this.new_dir_name + " in " + this.file_path);
+                            }
+                        };
+                        Request.send();
+                    }
+
+                });
+
+
+                //    div.getElementsByClassName('file_settings')[0].appendChild(mkdir);
+
+                var upload_file_link = document.createElement('a');
+                upload_file_link.setAttribute('href', "upload?dir=" + div.id);
+
+                var upload_file = document.createElement('img');
+                upload_file.setAttribute('class', 'files_icon');
+                upload_file.id = "upload_icon";
+                upload_file.alt = "upload";
+                if (page_full_loaded) {
+                    upload_file.src = "upload.png";
+                }
+                upload_file.setAttribute('title', "upload file");
+
+                upload_file_link.appendChild(upload_file);
+                div.getElementsByClassName('file_settings')[0].appendChild(upload_file_link);
+
+                //createIcon(div, "upload", "upload file");
+
+                if (div.name != "/") {
+                    // var delete_file = document.createElement('img');
+                    // delete_file.setAttribute('class', 'files_icon');
+                    // delete_file.id = "delete_icon";
+                    // delete_file.alt = "delete";
+                    // if (page_full_loaded) {
+                    //     delete_file.src = "delete.png";
+                    // }
+                    // delete_file.file_path = div.id;
+                    // delete_file.setAttribute('title', "delete this file");
+                    createIcon(div, "delete", "delete this folder").addEventListener('click', function() {
+                        if (document.querySelectorAll('[up_folder="' + this.file_path + '"]').length == 0) {
+                            var Request = new XMLHttpRequest();
+                            Request.open('GET', 'delete?name=' + this.file_path + "&type=dir");
+                            Request.file_path = this.file_path;
+                            Request.onload = function() {
+                                if (Request.status == 204) {
+                                    deleteFile(document.getElementById(this.file_path));
+                                    var up_dir = document.querySelector('[id="' + this.file_path + '"]').getAttribute('up_folder');
+                                    setTimeout(showFiles.bind(null, up_dir), 700);
+                                } else {
+                                    alert("Something went wrong with deleting file " + this.file_path);
+                                }
+                            };
+                            Request.send();
+                        } else {
+                            alert("Folder must be empty");
+                        }
+                    });
+                }
+                document.getElementById("files").appendChild(div);
+                return div.id;
+            }
+
+            function generateFiles(items, dir = "") {
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].type == "File") {
+                        createFile(dir, items[i].name, items[i].size);
+                    }
+
+                    if (items[i].type == "Dir") {
+                        var next_id = createDir(dir, items[i].name, items[i].Files.length)
+
+                        generateFiles(items[i].Files, next_id, false);
+                    }
                 }
             }
-        }
 
-        function ready() {
-            // var cssId = 'myCss'; // you could encode the css path itself to generate id..
-            // if (!document.getElementById(cssId)) {
-            //     var head = document.getElementsByTagName('head')[0];
-            //     var link = document.createElement('link');
-            //     link.id = cssId;
-            //     link.rel = 'stylesheet';
-            //     link.type = 'text/css';
-            //     link.href = 'styles.css';
-            //     link.media = 'all';
-            //     head.appendChild(link);
-            // }
+            function genereteImages(id, src) {
+                var selected_files = document.querySelectorAll('[id="' + id + '"]');
+                for (i = 0; i < selected_files.length; i++) {
+                    selected_files[i].src = src;
+                    selected_files[i].setAttribute('onerror', "reloadImage(this);");
+                }
+            }
 
-            var Request = new XMLHttpRequest();
-            Request.open('GET', 'data.json');
-            Request.onload = function() {
-                var Data = JSON.parse(Request.responseText);
+            function reloadFiles() {
+                deleteAllFiles();
+                var Request = new XMLHttpRequest();
+                Request.open('GET', 'data.json');
+                Request.onload = function() {
+                    var Data = JSON.parse(Request.responseText);
 
-                var items = Data;
-                generateFiles(items);
-                showOpenedFiles("/");
-            };
-            Request.send();
-        }
+                    var items = Data;
+                    generateFiles(items);
+                    showFolder("/");
+                };
+                Request.send();
+            }
+
+            function loadAllData() {
+                var Request = new XMLHttpRequest();
+                Request.open('GET', 'data.json');
+                Request.onload = function() {
+                    var Data = JSON.parse(Request.responseText);
+
+                    var items = Data;
+                    generateFiles(items);
+                    showFolder("/");
+
+                    setTimeout(function() {
+                        genereteImages("mkdir_icon", "mkdir.png");
+                    }, 1000);
+
+                    setTimeout(function() {
+                        genereteImages("upload_icon", "upload.png");
+                    }, 2000);
+
+                    setTimeout(function() {
+                        genereteImages("delete_icon", "delete.png");
+                    }, 3000);
+
+                    setTimeout(function() {
+                        genereteImages("download_icon", "download.png");
+                    }, 4000);
+
+                    setTimeout(function() {
+                        genereteImages("flash_icon", "flash.png");
+                        document.getElementById("loading_page_div").style.display = 'none';
+                        document.getElementById("page_content").style.display = 'block';
+                        page_full_loaded = true;
+                        //document.body.style.display = 'block';
+                    }, 5000);
+
+                };
+                Request.send();
+            }
+
+            function addEventListenersToButtons() {
+                var btn = document.getElementById('btn');
+                btn.addEventListener('click', function() {
+                    var Request = new XMLHttpRequest();
+                    Request.open('GET', 'data.json');
+                    Request.onload = function() {
+                        var Data = JSON.parse(Request.responseText);
+                        console.log(Data);
+                        alert(JSON.stringify(Data));
+                    };
+                    Request.send();
+
+                });
+
+                var reboot_esp_button = document.getElementById("reboot_esp_button");
+                reboot_esp_button.addEventListener('click', function() {
+                    var Request = new XMLHttpRequest();
+                    Request.open('GET', 'reboot');
+                    Request.onload = function() {
+                        alert("ESP32 is rebooting, page will be automatically reloaded after 3 seconds");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 3000);
+                    };
+                    Request.send();
+
+                });
+
+
+                var Files_header = document.getElementById("Files_header");
+                Files_header.addEventListener('click', function() {
+                    reloadFiles();
+                });
+            }
 
 
 
-        document.addEventListener("DOMContentLoaded", ready);
-    </script>
+            function ready() {
+                var cssId = 'myCss'; // you could encode the css path itself to generate id..
+                if (!document.getElementById(cssId)) {
+                    var head = document.getElementsByTagName('head')[0];
+                    var link = document.createElement('link');
+                    link.id = cssId;
+                    link.rel = 'stylesheet';
+                    link.type = 'text/css';
+                    link.href = 'styles.css';
+                    //    link.media = 'all';
+                    head.appendChild(link);
+                }
+                setTimeout(function() {
+                    loadAllData();
+                }, 1000);
+
+                addEventListenersToButtons();
+            }
+
+
+
+            document.addEventListener("DOMContentLoaded", ready);
+        </script>
+
+    </div>
 </body>
 
 </html>
