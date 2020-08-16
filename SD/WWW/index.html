@@ -6,14 +6,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="author" content="Marek Knosala" />
 
-    <!-- <script>
-        function reloadStyle(pThis) {
-            pThis.onerror = null;
-            pThis.src = pThis.src;
-        }
-    </script> -->
-
-
     <!-- <link rel="stylesheet" href="styles.css" onerror="reloadStyle(this);"> -->
     <!-- <link href='http://fonts.googleapis.com/css?family=Lato|Josefin+Sans&subset=latin,latin-ext' rel='stylesheet'
         type='text/css'> !-->
@@ -175,9 +167,6 @@
 
             function showFiles(dir) {
 
-                //  document.getElementById("upload_button").href = "/upload?dir=" + dir;
-
-
                 var exists = document.querySelector('[id="' + dir + '"]') !== null;
                 if (exists) {
                     document.querySelector('[id="' + dir + '"]').style.display = "block";
@@ -189,24 +178,10 @@
 
                 var selected_files = document.querySelectorAll('[up_folder="' + dir + '"]');
                 for (i = 0; i < selected_files.length; i++) {
-                    // if(files[i].style.display == "none"){
                     selected_files[i].style.display = "block";
                     selected_files[i].style.visibility = "visible";
                     selected_files[i].setAttribute('is_hiden', "false");
-                    // } else {
-                    //     files[i].style.display = "none";
-                    // }
                 }
-
-                // all_files = document.querySelectorAll('[class="file"]');
-                // for (i = 0; i < all_files.length; i++) {
-                //     if (all_files[i].style.visibility == "hidden") {
-                //         setTimeout(hideFile.bind(null, all_files[i]), 700);
-                //     }
-                // }
-
-
-
             }
 
 
