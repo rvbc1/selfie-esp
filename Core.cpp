@@ -51,8 +51,12 @@ Core::Core() {
 
     MemoryManager* memory = new MemoryManager();
 
+    Serial.print("Opening ");
+    Serial.println(NETWORK_SETTINGS_FILE);
     NetworkManager* networkManager =
         new NetworkManager(memory->sd.open(NETWORK_SETTINGS_FILE));
+
+    networkManager->printLoadedData();
 
     htttpServer = new HttpServer(memory);
 

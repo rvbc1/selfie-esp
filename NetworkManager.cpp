@@ -18,15 +18,22 @@ NetworkManager::NetworkManager(File networks_file) {
 }
 
 void NetworkManager::startAccessPoint() {
-    if (access_point_use_password) {
-        WiFi.softAP(access_point_ssid.c_str(), access_point_password.c_str(),
-                    (int)access_point_channel, (int)access_point_hidden,
-                    (int)access_point_max_connection);
-    } else {
-        WiFi.softAP(access_point_ssid.c_str(), "",
-                    (int)access_point_channel, (int)access_point_hidden,
-                    (int)access_point_max_connection);
+    if ((using_access_point_static_IP) &&
+        (access_point_flagsIP == 0b00000111)) {
+        if (!WiFi.softAPConfig(access_point_static_IP, access_point_gateway,
+                               access_point_subnet)) {
+            Serial.println("WiFi AP Failed to configure Correctly");
+        }
     }
+
+    String ap_password = "";
+    if (access_point_use_password) {
+        ap_password = access_point_password;
+    }
+
+    WiFi.softAP(access_point_ssid.c_str(), ap_password.c_str(),
+                (int)access_point_channel, (int)access_point_hidden,
+                (int)access_point_max_connection);
 }
 
 void NetworkManager::connectToSavedNetwork() {
@@ -88,7 +95,7 @@ uint8_t NetworkManager::loadDataFromSettingsFile(File networks_file) {
 
         if (json.containsKey("Access_Point")) {
             if (json["Access_Point"].is<JsonObject>()) {
-                loadAccessPointcSettings(json["Access_Point"].as<JsonObject>());
+                loadAccessPointSettings(json["Access_Point"].as<JsonObject>());
             }
         }
 
@@ -106,7 +113,39 @@ uint8_t NetworkManager::loadDataFromSettingsFile(File networks_file) {
     return true;
 }
 
-void NetworkManager::loadAccessPointcSettings(JsonObject json) {
+void NetworkManager::loadAccessPointStaticIP(JsonObject json) {
+    if (json.containsKey("use")) {
+        if (json["use"].is<bool>()) {
+            using_access_point_static_IP = json["use"].as<bool>();
+        }
+    }
+
+    if (json.containsKey("IP")) {
+        if (json["IP"].is<String>()) {
+            if (access_point_static_IP.fromString(json["IP"].as<String>())) {
+                setBit(access_point_flagsIP, STATIC_IP_FLAG_BIT);
+            }
+        }
+    }
+
+    if (json.containsKey("Gateway")) {
+        if (json["Gateway"].is<String>()) {
+            if (access_point_gateway.fromString(json["Gateway"].as<String>())) {
+                setBit(access_point_flagsIP, GATEWAY_FLAG_BIT);
+            }
+        }
+    }
+
+    if (json.containsKey("Subnet")) {
+        if (json["Subnet"].is<String>()) {
+            if (access_point_subnet.fromString(json["Subnet"].as<String>())) {
+                setBit(access_point_flagsIP, SUBNET_FLAG_BIT);
+            }
+        }
+    }
+}
+
+void NetworkManager::loadAccessPointSettings(JsonObject json) {
     if (json.containsKey("use")) {
         if (json["use"].is<bool>()) {
             using_access_point = json["use"].as<bool>();
@@ -156,6 +195,12 @@ void NetworkManager::loadAccessPointcSettings(JsonObject json) {
                 Serial.println(access_point_max_connection);
                 access_point_max_connection = DEFAULT_AP_MAX_CONNECTION;
             }
+        }
+    }
+
+    if (json.containsKey("static_IP")) {
+        if (json["static_IP"].is<JsonObject>()) {
+            loadAccessPointStaticIP(json["static_IP"].as<JsonObject>());
         }
     }
 }
@@ -303,6 +348,30 @@ void NetworkManager::printLoadedData() {
 
     Serial.print("  max_connection: ");
     Serial.println(((int)access_point_max_connection));
+
+      Serial.println("  static IP:");
+    if (using_static_IP)
+        Serial.println("    using: yes");
+    else
+        Serial.println("    using: no");
+
+    Serial.println("    IP: " + access_point_static_IP.toString());
+    if (getBit(access_point_flagsIP, STATIC_IP_FLAG_BIT))
+        Serial.println("      valid: yes");
+    else
+        Serial.println("      valid: no");
+
+    Serial.println("    Gateway: " + gateway.toString());
+    if (getBit(access_point_flagsIP, GATEWAY_FLAG_BIT))
+        Serial.println("      valid: yes");
+    else
+        Serial.println("      valid: no");
+
+    Serial.println("    Subnet: " + subnet.toString());
+    if (getBit(access_point_flagsIP, SUBNET_FLAG_BIT))
+        Serial.println("      valid: yes");
+    else
+        Serial.println("      valid: no");
 
     Serial.println("\nSaved Networks Settings:");
 

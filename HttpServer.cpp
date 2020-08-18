@@ -326,7 +326,9 @@ HttpServer::HttpServer(MemoryManager *memory2) {
     server.on("/mkdir", []() {
         if (server.hasArg("name") && server.arg("name") != NULL &&
             server.hasArg("dir") && server.arg("dir") != NULL) {
-            String filename = server.arg("dir") + server.arg("name");
+            String filename = server.arg("dir");
+            if (!filename.endsWith("/")) filename += "/";
+            filename += server.arg("name");
             if (HttpServer::memory->sd.mkdir(
                     const_cast<char *>(filename.c_str()), false)) {
                 server.send(204);

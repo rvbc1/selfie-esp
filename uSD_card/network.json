@@ -1,0 +1,48 @@
+{
+    "Access_Point": {
+        "use": true,
+        "ssid": "esp32",
+        "password": "esp12345678",
+        "use_password": true,
+        "channel": 2,
+        "hidden": false,
+        "max_connections": 4,
+        "static_IP": {
+            "use": true,
+            "IP": "192.168.1.1",
+            "Gateway": "192.168.1.1",
+            "Subnet": "255.255.255.0"
+        }
+    },
+    "Existing_Networks": {
+        "connect": true,
+        "timeout": 4,
+        "static_IP": {
+            "use": true,
+            "IP": "192.168.1.105",
+            "Gateway": "192.168.1.1",
+            "Subnet": "255.255.255.0",
+            "DNS": {
+                "use": true,
+                "IP": "192.168.1.1"
+            }
+        },
+        "Saved_Networks": [{
+                "ssid": "Test1",
+                "password": "gfdgfd8"
+            },
+            {
+                "ssid": "Test2",
+                "password": "dfgfdgdfgdf"
+            },
+            {
+                "ssid": "MK",
+                "password": "MK12345678"
+            },
+            {
+                "ssid": "test3",
+                "password": "test12345"
+            }
+        ]
+    }
+}

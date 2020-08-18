@@ -94,8 +94,12 @@
                         var xhttp = new XMLHttpRequest();
                         xhttp.onreadystatechange = function() {
                             if (this.readyState == 4 && this.status == 200) {
-                                document.getElementById("BT").innerHTML =
-                                    this.responseText;
+                                var temp = document.createElement('textarea');
+                                temp.innerHTML = this.responseText;
+                                if (document.getElementById("BT").innerHTML !== temp.innerHTML) {
+                                    document.getElementById("BT").innerHTML = temp.innerHTML;
+                                    document.getElementById("BT").scrollTop = document.getElementById("BT").scrollHeight;
+                                }
                             }
                         };
                         xhttp.open("GET", "readBT", true);
@@ -127,10 +131,19 @@
                 file.parentNode.removeChild(file);
             }
 
-            function deleteFile(file) {
+            function deleteFile(file, update_up_folder_size = true) {
                 file.style.visibility = "hidden";
                 file.setAttribute('is_hiden', "true");
                 file.setAttribute('is_opened_folder', "false");
+
+                if (update_up_folder_size) {
+                    var up_folder = file.getAttribute('up_folder');
+                    if (up_folder) {
+                        var old_dir_size = document.getElementById(up_folder).getElementsByClassName('file_size')[0].getElementsByClassName('file_size_value')[0].innerHTML;
+                        var new_dir_size = parseInt(old_dir_size) - 1;
+                        document.getElementById(up_folder).getElementsByClassName('file_size')[0].getElementsByClassName('file_size_value')[0].innerHTML = new_dir_size;
+                    }
+                }
 
                 setTimeout(deleteFileFromHTML.bind(null, file), 700);
             }
@@ -138,7 +151,7 @@
             function deleteAllFiles() {
                 var all_files = document.querySelectorAll('[class="file"]');
                 for (i = 0; i < all_files.length; i++) {
-                    deleteFile(all_files[i]);
+                    deleteFile(all_files[i], false);
                 }
             }
 
@@ -272,7 +285,7 @@
                 var div = createFileDiv(dir, name);
 
                 div.setAttribute('type', "file");
-                div.getElementsByClassName('file_size')[0].innerHTML = '[' + size + ' bytes]';
+                div.getElementsByClassName('file_size')[0].innerHTML = '[<span class="file_size_value">' + size + '</span> bytes]';
 
                 if (getExtension(div.name) == "bin" || getExtension(div.name) == "hex") {
                     createIcon(div, "flash", "flash using this file");
@@ -315,7 +328,7 @@
                     div.getElementsByClassName('file_name')[0].addEventListener('click', showFilesEvenetLisner.bind(event, div.id), false);
                 }
                 div.setAttribute('type', "dir");
-                div.getElementsByClassName('file_size')[0].innerHTML = '[' + files_lenght_in_dir + ' files]';
+                div.getElementsByClassName('file_size')[0].innerHTML = '[<span class="file_size_value">' + files_lenght_in_dir + '</span> files]';
 
                 var input = document.createElement("input");
                 input.id = div.id + "_mkdir_input";
