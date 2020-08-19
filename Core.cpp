@@ -1,7 +1,6 @@
 #include "Core.h"
 
 #include "BluetoothSerial.h"
-#include "Update.h"
 
 BluetoothSerial SerialBT;
 
@@ -20,12 +19,48 @@ void Task1code(void* pvParameters) {
     }
 }
 
+String blueooth_name = "ESP32test";
+
+uint8_t loadBluetoothSettingsFromFile(File bluetooth_file) {
+    DynamicJsonDocument doc(1024);
+    String json_raw = "";
+    if (bluetooth_file) {
+        while (bluetooth_file.available()) {
+            json_raw += (char)bluetooth_file.read();
+        }
+        bluetooth_file.close();
+
+        DeserializationError error = deserializeJson(doc, json_raw);
+
+        if (error) {
+            Serial.print(bluetooth_file.name());
+            Serial.print(" Json deserialize failed: ");
+            Serial.println(error.c_str());
+            return false;
+        }
+
+        JsonObject json = doc.as<JsonObject>();
+
+        if (json.containsKey("name")) {
+            if (json["name"].is<String>()) {
+                blueooth_name = json["name"].as<String>();
+                Serial.println(blueooth_name);
+            }
+        }
+    } else {
+        Serial.println("error opening network settings file");
+        return false;
+    }
+    return true;
+}
+
 // Task2code: blinks an LED every 700 ms
 void Task2code(void* pvParameters) {
     Serial.print("Task2 running on core ");
     Serial.println(xPortGetCoreID());
 
-    SerialBT.begin("ESP32test");
+
+    SerialBT.begin(blueooth_name);
     delay(3000);
 
     String bt_data = "";
@@ -56,9 +91,13 @@ Core::Core() {
     NetworkManager* networkManager =
         new NetworkManager(memory->sd.open(NETWORK_SETTINGS_FILE));
 
-    networkManager->printLoadedData();
+    //networkManager->printLoadedData();
 
-    htttpServer = new HttpServer(memory);
+    Flasher* flasher = new Flasher(memory);
+
+    htttpServer = new HttpServer(flasher, memory, memory->sd.open(HTTP_SETTINGS_FILE));
+
+    loadBluetoothSettingsFromFile(memory->sd.open(BLUETOOTH_SETTINGS_FILE));
 
     xTaskCreatePinnedToCore(
         Task2code, /* Task function. */

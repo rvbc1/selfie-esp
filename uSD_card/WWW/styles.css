@@ -79,6 +79,10 @@ textarea {
     animation: in 700ms ease both;
 }
 
+#file {
+    color: white;
+}
+
 .file {
     background-color: #ddceee;
     text-align: center;

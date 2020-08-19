@@ -288,7 +288,22 @@
                 div.getElementsByClassName('file_size')[0].innerHTML = '[<span class="file_size_value">' + size + '</span> bytes]';
 
                 if (getExtension(div.name) == "bin" || getExtension(div.name) == "hex") {
-                    createIcon(div, "flash", "flash using this file");
+                    createIcon(div, "flash", "flash using this file").addEventListener('click', function() {
+                        var Request = new XMLHttpRequest();
+                        Request.open('GET', 'update');
+                        Request.file_path = this.file_path;
+                        Request.onload = function() {
+                            if (Request.status == 204) {
+                                alert("ESP32 is rebooting, page will be automatically reloaded after 5 seconds");
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 5000);
+                            } else {
+                                alert("Something went wrong with flashing file " + this.file_path);
+                            }
+                        };
+                        Request.send();
+                    });
                 }
 
                 var download_file_link = document.createElement('a');
@@ -311,7 +326,6 @@
                         }
                     };
                     Request.send();
-
                 });
 
 
@@ -352,6 +366,12 @@
                         Request.onload = function() {
                             if (Request.status == 204) {
                                 createDir(this.file_path, this.new_dir_name, 0);
+                                var up_folder = this.file_path;
+                                if (up_folder) {
+                                    var old_dir_size = document.getElementById(up_folder).getElementsByClassName('file_size')[0].getElementsByClassName('file_size_value')[0].innerHTML;
+                                    var new_dir_size = parseInt(old_dir_size) + 1;
+                                    document.getElementById(up_folder).getElementsByClassName('file_size')[0].getElementsByClassName('file_size_value')[0].innerHTML = new_dir_size;
+                                }
                                 showFolder(this.file_path);
                             } else {
                                 alert("Something went wrong with creating file " + this.new_dir_name + " in " + this.file_path);
@@ -438,6 +458,19 @@
                     var Data = JSON.parse(Request.responseText);
 
                     var items = Data;
+
+                    var icon = document.createElement('img');
+                    icon.setAttribute('class', 'files_icon');
+                    icon.id = "reload_icon";
+                    icon.alt = "reload";
+                    icon.setAttribute('title', "reload files");
+                    icon.src = "reload.png";
+                    icon.addEventListener('click', function() {
+                        reloadFiles();
+                    });
+
+                    document.getElementById("Files_header").appendChild(icon);
+
                     generateFiles(items);
                     showFolder("/");
 
@@ -495,12 +528,6 @@
                     };
                     Request.send();
 
-                });
-
-
-                var files_header = document.getElementById("Files_header");
-                files_header.addEventListener('click', function() {
-                    reloadFiles();
                 });
 
                 // sent_bt_msg_from_page

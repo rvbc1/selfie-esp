@@ -9,6 +9,7 @@
 #include "NetworkManager.h"
 #include "HttpServer.h"
 #include "MemoryManager.h"
+#include "Flasher.h"
 
 
 

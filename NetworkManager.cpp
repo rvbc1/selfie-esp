@@ -75,14 +75,14 @@ bool inRange(unsigned low, unsigned high, unsigned x) {
 
 uint8_t NetworkManager::loadDataFromSettingsFile(File networks_file) {
     DynamicJsonDocument doc(1024);
-    String json_networks = "";
+    String json_raw = "";
     if (networks_file) {
         while (networks_file.available()) {
-            json_networks += (char)networks_file.read();
+            json_raw += (char)networks_file.read();
         }
         networks_file.close();
 
-        DeserializationError error = deserializeJson(doc, json_networks);
+        DeserializationError error = deserializeJson(doc, json_raw);
 
         if (error) {
             Serial.print(networks_file.name());
@@ -107,7 +107,7 @@ uint8_t NetworkManager::loadDataFromSettingsFile(File networks_file) {
         }
 
     } else {
-        Serial.println("error opening test.txt");
+        Serial.println("error opening network settings file");
         return false;
     }
     return true;

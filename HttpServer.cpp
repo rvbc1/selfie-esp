@@ -11,6 +11,7 @@
 ESP32WebServer server(HTTP_PORT);
 
 MemoryManager *HttpServer::memory;
+Flasher *HttpServer::flasher;
 
 String HttpServer::bt_console = "";
 
@@ -132,13 +133,15 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
         Serial.print("handleFileUpload Name: ");
 
         filename = FIRMWARE_FILE;
+        String old_filename = OLD_FIRMWARE_FILE;
         Serial.println(filename);
 
         if (HttpServer::memory->sd.exists(
                 const_cast<char *>(filename.c_str()))) {
             removeFileIfExists(OLD_FIRMWARE_FILE);
-            HttpServer::memory->sd.rename(const_cast<char *>(filename.c_str()),
-                                          OLD_FIRMWARE_FILE);
+            HttpServer::memory->sd.rename(
+                const_cast<char *>(filename.c_str()),
+                const_cast<char *>(old_filename.c_str()));
         }
 
         fsUploadFile.open(filename.c_str(), O_RDWR | O_CREAT);
@@ -153,46 +156,7 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
             Serial.println(upload.totalSize);
             server.sendHeader("Location", "/");
             server.send(303);
-
-            File file = HttpServer::memory->sd.open("ESP32/firmware.bin");
-
-            size_t updateSize = file.fileSize();
-
-            if (Update.begin(updateSize)) {
-                size_t written = Update.writeStream(file);
-                if (written == updateSize) {
-                    Serial.println("Written : " + String(written) +
-                                   " successfully");
-                } else {
-                    Serial.println("Written only : " + String(written) + "/" +
-                                   String(updateSize) + ". Retry?");
-                }
-                if (Update.end()) {
-                    Serial.println("OTA done!");
-                    if (Update.isFinished()) {
-                        Serial.println(
-                            "Update successfully completed. Rebooting.");
-                        Serial.println("Reset in 4 seconds...");
-
-                        server.sendHeader("Location", "/");
-                        server.send(303);
-                        delay(4000);
-
-                        ESP.restart();
-                    } else {
-                        Serial.println(
-                            "Update not finished? Something went wrong!");
-                    }
-                } else {
-                    Serial.println("Error Occurred. Error #: " +
-                                   String(Update.getError()));
-                }
-
-            } else {
-                Serial.println("Not enough space to begin OTA");
-            }
-
-            file.close();
+            HttpServer::flasher->FlashESP32();
 
         } else {
             server.send(500, "text/plain", "500: couldn't create file");
@@ -253,11 +217,52 @@ void HttpServer::setBTmsg(String msg) {
     bt_console += ">>> OK\n";
 }
 
-HttpServer::HttpServer(MemoryManager *memory2) {
+uint8_t HttpServer::loadHttpSettingsFromFile(File http_file) {
+    DynamicJsonDocument doc(1024);
+    String json_raw = "";
+    if (http_file) {
+        while (http_file.available()) {
+            json_raw += (char)http_file.read();
+        }
+        http_file.close();
+
+        DeserializationError error = deserializeJson(doc, json_raw);
+
+        if (error) {
+            Serial.print(http_file.name());
+            Serial.print(" Json deserialize failed: ");
+            Serial.println(error.c_str());
+            return false;
+        }
+
+        JsonObject json = doc.as<JsonObject>();
+
+        if (json.containsKey("MDNS_name")) {
+            if (json["MDNS_name"].is<String>()) {
+                mdns_name = json["MDNS_name"].as<String>();
+                Serial.println(mdns_name);
+            }
+        }
+    } else {
+        Serial.println("error opening network settings file");
+        return false;
+    }
+    return true;
+}
+
+HttpServer::HttpServer(Flasher *flasher2, MemoryManager *memory2,
+                       File http_file) {
     memory = memory2;
-    if (MDNS.begin("esp32")) {
+    flasher = flasher2;
+
+    loadHttpSettingsFromFile(http_file);
+    if (MDNS.begin(const_cast<char *>(mdns_name.c_str()))) {
         Serial.println("MDNS responder started");
     }
+
+    //  if (MDNS.begin("esp32")) {
+    //      Serial.println("MDNS responder started");
+    //  }
 
     server.on("/", HomePage);
 
@@ -293,6 +298,12 @@ HttpServer::HttpServer(MemoryManager *memory2) {
 
     server.on("/upload.png", []() {
         File file = memory->sd.open("WWW/icons/upload.png");
+        size_t sent = server.streamFile(file, "image/png");
+        file.close();
+    });
+
+    server.on("/reload.png", []() {
+        File file = memory->sd.open("WWW/icons/reload.png");
         size_t sent = server.streamFile(file, "image/png");
         file.close();
     });
@@ -379,47 +390,16 @@ HttpServer::HttpServer(MemoryManager *memory2) {
         }
     });
 
-    server.on("/inline", []() { server.send(200, "text/plain", "this works as well"); });
+    server.on("/inline",
+              []() { server.send(200, "text/plain", "this works as well"); });
 
     server.on("/update", []() {
-        File file = memory->sd.open("WWW/firmware.bin");
-
-        size_t updateSize = file.fileSize();
-
-        if (Update.begin(updateSize)) {
-            size_t written = Update.writeStream(file);
-            if (written == updateSize) {
-                Serial.println("Written : " + String(written) +
-                               " successfully");
-            } else {
-                Serial.println("Written only : " + String(written) + "/" +
-                               String(updateSize) + ". Retry?");
-            }
-            if (Update.end()) {
-                Serial.println("OTA done!");
-                if (Update.isFinished()) {
-                    Serial.println("Update successfully completed. Rebooting.");
-                    Serial.println("Reset in 4 seconds...");
-
-                    server.sendHeader("Location", "/");
-                    server.send(303);
-                    delay(4000);
-
-                    ESP.restart();
-                } else {
-                    Serial.println(
-                        "Update not finished? Something went wrong!");
-                }
-            } else {
-                Serial.println("Error Occurred. Error #: " +
-                               String(Update.getError()));
-            }
-
-        } else {
-            Serial.println("Not enough space to begin OTA");
-        }
-
-        file.close();
+       // if (HttpServer::flasher->FlashESP32()) {
+           HttpServer::flasher->FlashESP32();
+            server.send(204);
+    //    } else {
+    //        server.send(500);
+     //   }
     });
 
     server.on("/flash", HTTP_GET,
