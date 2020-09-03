@@ -20,6 +20,7 @@
 
 class NetworkManager {
    public:
+    void getInof(JsonObject json);
     NetworkManager(File networks_file);
 
     struct network_struct {

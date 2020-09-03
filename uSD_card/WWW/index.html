@@ -44,31 +44,187 @@
     <div id="page_content">
         <h1>Selfie Server 1.0</h1>
         <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'Files_tab')" id="defaultOpen">Files</button>
+            <button class="tablinks" onclick="openTab(event, 'uSD_card_tab')" id="defaultOpen">&microSD card</button>
+            <button class="tablinks" onclick="openTab(event, 'IntrernalMemory_tab')" id="defaultOpen">Internal Memory</button>
             <button class="tablinks" onclick="openTab(event, 'BT_tab')">Bluetooth</button>
+            <button class="tablinks" onclick="openTab(event, 'Info_tab')">Info</button>
             <button class="tablinks" onclick="openTab(event, 'Settings_tab')">Settings</button>
         </div>
 
-        <div id="Files_tab" class="tabcontent">
-            <h1 id="Files_header">Files</h1>
+        <div id="uSD_card_tab" class="tabcontent">
+            <h1 id="Files_header"><span id="Files_header_text">Files</span></h1>
             <div id='files'></div>
         </div>
 
+        <div id="IntrernalMemory_tab" class="tabcontent">
+            <h1 id="Files_header_im">Files</h1>
+            <div id='files_im'></div>
+        </div>
+
         <div id="BT_tab" class="tabcontent">
-            <textarea id="BT" rows="4" cols="50" disabled>
-        </textarea>
+            <textarea id="BT" rows="4" cols="50" disabled></textarea>
             <input type="text" id="msg_bt" name="msg" class="msg_bt" placeholder="Bluetooth command">
             <button id="sent_bt_btn" class="button_bt">Sent</button>
             <button class="button_bt">Clear</button>
+        </div>
+
+        <div id="Info_tab" class="tabcontent">
+            <textarea id="Info_textarea" rows="4" cols="50" disabled></textarea>
         </div>
 
         <div id="Settings_tab" class="tabcontent">
             <a href='/flash'><button>Flash ESP32</button></a>
             <button id="reboot_esp_button">Restart ESP32</button>
             <button id="btn">Remove all</button>
+
+            <!-- <textarea id="emailText" placeholder="Type message here"></textarea><br>
+
+            <input type="file" id="attachment" />
+            <input type="button" value="Upload File" onclick="sendEmail()" />
+            <progress id="upload_file_progress_bar" value="0" max="100"> 0% </progress> -->
         </div>
 
+        <div class="popup" id="upload-popup">
+            <div class="overlay"></div>
+            <div class="content">
+                <div class="close-btn" pupup-id="upload-popup" onclick='togglePopup(this)'>&times;</div>
+                <h1>Upload File</h1>
+                <input type="file" id="attachment" />
+                <input type="button" value="Upload File" onclick="sendEmail()" />
+                <div id="upload_file_progress_bar_contener">
+                    <div id="upload_file_progress_bar"></div>
+                </div>
+                <div id="upload-status"></div>
+
+            </div>
+        </div>
+
+        <div class="popup" id="flash-popup">
+            <div class="overlay"></div>
+            <div class="content">
+                <div class="close-btn" pupup-id="flash-popup" onclick='togglePopup(this)'>&times;</div>
+                <h1 id="flashing-header"></h1>
+                <button id="flashing_popup_flash_button" onclick="flashRequestESP32(this.filepath)">Flash</button>
+                <div class="" id="flash-status"></div>
+            </div>
+        </div>
+
+        <ul>
+            <li><a href='/'>Home</a></li>
+            <li><a href='/download'>Download</a></li>
+            <li><a href='/upload'>Upload</a></li>
+        </ul>
+        <footer>&copy; Marek Knosala 2020 ;)</footer>
+
         <script>
+            function togglePopup(popup) {
+                document.getElementById(popup.getAttribute("pupup-id")).classList.toggle("active");
+            }
+        </script>
+
+        <script>
+            function sendEmail() {
+                let data = new FormData();
+                const fileField = document.querySelector('input[type="file"]');
+                data.append("file", fileField.files[0]);
+
+                var file_path = document.querySelector('[is_opened_folder = true]').id;
+
+
+                let request = new XMLHttpRequest();
+                request.open('POST', 'upload_request?dir=' + file_path);
+                //request.filename = 
+                request.file_name = fileField.files[0].name;
+                request.file_size = fileField.files[0].size;
+                request.file_dir = file_path;
+
+                // upload progress event
+                request.upload.addEventListener('progress', function(e) {
+                    // upload progress as percentage
+                    let percent_completed = (e.loaded / e.total) * 100;
+                    document.getElementById("upload_file_progress_bar").style.width = percent_completed + '%';
+                    if (percent_completed < 100) {
+                        document.getElementById("upload-status").innerHTML = "File is uploading";
+                    } else {
+                        document.getElementById("upload-status").innerHTML = "File is saving";
+                    }
+
+
+                    // console.log(percent_completed);
+                });
+
+                // request finished event
+                request.addEventListener('load', function(e) {
+                    // HTTP status message (200, 404 etc)
+                    if (request.status == 200) {
+                        document.getElementById("upload-status").classList.toggle("pulsing");
+                        document.getElementById("upload-status").innerHTML = "File uploaded!";
+                        var filepath = this.file_dir;
+                        if (this.file_dir == "/") {
+                            filepath += this.file_name;
+                        } else {
+                            filepath += "/" + this.file_name;
+                        }
+                        console.log(filepath);
+                        if (document.getElementById(filepath) == null) {
+                            createFile(this.file_dir, this.file_name, this.file_size);
+                        } else {
+                            deleteFile(document.getElementById(filepath));
+                            createFile(this.file_dir, this.file_name, this.file_size);
+
+                        }
+                        //createFile(this.file_dir, this.file_name, this.file_size);
+                        showFolder(this.file_dir);
+                    } else {
+                        document.getElementById("upload_file_progress_bar").style.width = 0 + '%';
+                        document.getElementById("upload-status").innerHTML = "Error while uploading file";
+                    }
+                });
+
+                // send POST request to server
+                request.send(data);
+                document.getElementById("upload-status").classList.toggle("pulsing");
+            }
+
+            function flashRequestESP32(file_path) {
+                var Request = new XMLHttpRequest();
+                Request.open('GET', 'flash_esp32_request?file=' + file_path);
+                Request.file_path = file_path;
+                document.getElementById("flash-status").innerHTML = "flashing";
+                Request.onload = function() {
+                    if (Request.status == 204) {
+                        // alert("ESP32 is rebooting, page will be automatically reloaded after 5 seconds");
+                        // setTimeout(function() {
+                        //     location.reload();
+                        // }, 5000);
+                        //alert("Flashing OK");
+                        document.getElementById("flash-status").innerHTML = "Flashed!";
+                        document.getElementById("flash-status").classList.toggle("pulsing");
+                        var r = confirm("Flashed, do you want reboot?");
+                        if (r == true) {
+                            // txt = "You pressed OK!";
+                            var reboot_request = new XMLHttpRequest();
+                            reboot_request.open('GET', 'reboot');
+                            reboot_request.onload = function() {
+                                alert("ESP32 is rebooting, page will be automatically reloaded after 3 seconds");
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 3000);
+                            };
+                            reboot_request.send();
+                        } else {
+                            // txt = "You pressed Cancel!";
+                        }
+                    } else {
+                        document.getElementById("flash-status").innerHTML = "Something went wrong";
+                        //alert("Something went wrong with flashing file " + this.file_path);
+                    }
+                    document.getElementById("flash-status").classList.toggle("pulsing");
+                };
+                Request.send();
+                document.getElementById("flash-status").classList.toggle("pulsing");
+            }
+
             var BT_timer;
 
             function openTab(evt, tabName) {
@@ -83,6 +239,20 @@
                 }
                 document.getElementById(tabName).style.display = "block";
                 evt.currentTarget.className += " active";
+
+                if (tabName == "Info_tab") {
+                    var Request = new XMLHttpRequest();
+                    Request.open('GET', 'info.json');
+                    Request.onload = function() {
+                        var Data = JSON.parse(Request.responseText);
+                        var str = JSON.stringify(Data, null, 2);
+                        document.getElementById('Info_textarea').innerHTML = str;
+                        //  var Data = JSON.parse(Request.responseText);
+                        //  console.log(Data);
+                        // alert(JSON.stringify(Data));
+                    };
+                    Request.send();
+                }
 
                 if (tabName == "BT_tab") {
                     getData();
@@ -111,19 +281,8 @@
             }
 
             document.getElementById("defaultOpen").click();
-        </script>
-
-        <ul>
-            <li><a href='/'>Home</a></li>
-            <li><a href='/download'>Download</a></li>
-            <li><a href='/upload'>Upload</a></li>
-        </ul>
-        <footer>&copy; Marek Knosala 2020 ;)</footer>
 
 
-
-
-        <script>
             var page_full_loaded = false;
 
             function deleteFileFromHTML(file) {
@@ -179,7 +338,7 @@
             }
 
             function showFiles(dir) {
-
+                console.log("Showing foler: " + dir);
                 var exists = document.querySelector('[id="' + dir + '"]') !== null;
                 if (exists) {
                     document.querySelector('[id="' + dir + '"]').style.display = "block";
@@ -214,6 +373,16 @@
 
             function getExtension(fileName) {
                 return fileName.substr(fileName.lastIndexOf('.') + 1);
+            }
+
+            function file_exists(file) {
+                var exists = document.querySelector('[id="' + file + '"]') !== null;
+                if (exists) {
+                    alert('The element exists in the page.');
+                } else {
+                    alert('The element does not exists in the page.');
+                }
+                return exists;
             }
 
 
@@ -280,7 +449,6 @@
                 return div
             }
 
-
             function createFile(dir, name, size) {
                 var div = createFileDiv(dir, name);
 
@@ -289,20 +457,18 @@
 
                 if (getExtension(div.name) == "bin" || getExtension(div.name) == "hex") {
                     createIcon(div, "flash", "flash using this file").addEventListener('click', function() {
-                        var Request = new XMLHttpRequest();
-                        Request.open('GET', 'update');
-                        Request.file_path = this.file_path;
-                        Request.onload = function() {
-                            if (Request.status == 204) {
-                                alert("ESP32 is rebooting, page will be automatically reloaded after 5 seconds");
-                                setTimeout(function() {
-                                    location.reload();
-                                }, 5000);
-                            } else {
-                                alert("Something went wrong with flashing file " + this.file_path);
-                            }
-                        };
-                        Request.send();
+                        var filepath_files = this.file_path.split('/');
+                        if (filepath_files[1] == "ESP32") {
+                            document.getElementById("flash-popup").classList.toggle("active");
+                            document.getElementById("flashing-header").innerHTML = "Flashing ESP32 with file: " + this.file_path;
+                            document.getElementById("flashing_popup_flash_button").filepath = this.file_path;
+                            //flashRequestESP32(this.file_path);
+                        } else if (filepath_files[1] == "STM32") {
+                            document.getElementById("flash-popup").classList.toggle("active");
+                            document.getElementById("flashing-header").innerHTML = "Flashing STM32 with file: " + this.file_path;
+                        } else {
+                            alert("Flashing file not in ESP32 or STM32 folder (I don't know which \u00B5Controler shuold be flashed)");
+                        }
                     });
                 }
 
@@ -382,13 +548,17 @@
 
                 });
 
-                var upload_file_link = document.createElement('a');
-                upload_file_link.setAttribute('href', "upload?dir=" + div.id);
+                //        var upload_file_link = document.createElement('a');
+                //        upload_file_link.setAttribute('href', "upload?dir=" + div.id);
 
-                var upload_file = createIcon(div, "upload", "upload file");
-                var upload_file_parent = upload_file.parentNode;
-                upload_file_parent.replaceChild(upload_file_link, upload_file);
-                upload_file_link.appendChild(upload_file);
+
+                var upload_file = createIcon(div, "upload", "upload file").addEventListener('click', function() {
+                    document.getElementById("upload_file_progress_bar").style.width = 0 + '%';
+                    document.getElementById("upload-popup").classList.toggle("active");
+                });
+                //          var upload_file_parent = upload_file.parentNode;
+                //          upload_file_parent.replaceChild(upload_file_link, upload_file);
+                //         upload_file_link.appendChild(upload_file);
 
                 if (div.name != "/") {
                     createIcon(div, "delete", "delete this folder").addEventListener('click', function() {
@@ -411,6 +581,10 @@
                         }
                     });
                 }
+
+                createIcon(div, "reload", "reload this folder").addEventListener('click', function() {
+                    reloadFiles();
+                });
                 document.getElementById("files").appendChild(div);
                 return div.id;
             }
@@ -429,15 +603,60 @@
                 }
             }
 
-            function genereteImages(id, src) {
+            function genereteImages(id, src, index) {
                 var selected_files = document.querySelectorAll('[id="' + id + '"]');
                 for (i = 0; i < selected_files.length; i++) {
                     selected_files[i].src = src;
                     selected_files[i].setAttribute('onerror', "reloadImage(this);");
+                    selected_files[i].onload = function() {
+                        loadImages(index + 1);
+                    };
                 }
             }
 
+            function loadImages(index = 0) {
+                var images_array = ["mkdir", "upload", "delete", "download", "reload", "flash"];
+                if (index < images_array.length) {
+                    genereteImages(images_array[index] + "_icon", images_array[index] + ".png", index);
+                } else {
+                    document.getElementById("loading_page_div").style.display = 'none';
+                    document.getElementById("page_content").style.display = 'block';
+                    page_full_loaded = true;
+                }
+            }
+
+            function searchFileExistsInJSON(json, filepath_to_search, founded_path = '') {
+                if ('name' in json) {
+                    if (filepath_to_search.startsWith(json.name)) {
+                        filepath_to_search = filepath_to_search.substr(json.name.length, filepath_to_search.length);
+                        founded_path = json.name;
+                        if (filepath_to_search != '') {
+                            if ('Files' in json) {
+                                if (json.name != '/') {
+                                    var first_slash = '/';
+                                    filepath_to_search = filepath_to_search.substr(first_slash.length, filepath_to_search.length);
+                                }
+                                for (var i = 0; i < json.Files.length; i++) {
+                                    if ('name' in json.Files[i]) {
+                                        if (filepath_to_search.startsWith(json.Files[i].name)) {
+                                            if (json.name != '/') {
+                                                founded_path += "/";
+                                            }
+                                            founded_path += searchFileExistsInJSON(json.Files[i], filepath_to_search, founded_path);
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+                return founded_path;
+            }
+
             function reloadFiles() {
+                var last_opened_folder = document.querySelector('[is_opened_folder = true]').id;
+                console.log("last opened: " + last_opened_folder);
                 deleteAllFiles();
                 var Request = new XMLHttpRequest();
                 Request.open('GET', 'data.json');
@@ -446,7 +665,12 @@
 
                     var items = Data;
                     generateFiles(items);
-                    showFolder("/");
+
+                    var searched = searchFileExistsInJSON(items[0], last_opened_folder);
+                    console.log("searched last opened: " + searched);
+
+                    showFolder(searched);
+
                 };
                 Request.send();
             }
@@ -459,45 +683,10 @@
 
                     var items = Data;
 
-                    var icon = document.createElement('img');
-                    icon.setAttribute('class', 'files_icon');
-                    icon.id = "reload_icon";
-                    icon.alt = "reload";
-                    icon.setAttribute('title', "reload files");
-                    icon.src = "reload.png";
-                    icon.addEventListener('click', function() {
-                        reloadFiles();
-                    });
-
-                    document.getElementById("Files_header").appendChild(icon);
-
                     generateFiles(items);
                     showFolder("/");
 
-                    setTimeout(function() {
-                        genereteImages("mkdir_icon", "mkdir.png");
-                    }, 1000);
-
-                    setTimeout(function() {
-                        genereteImages("upload_icon", "upload.png");
-                    }, 2000);
-
-                    setTimeout(function() {
-                        genereteImages("delete_icon", "delete.png");
-                    }, 3000);
-
-                    setTimeout(function() {
-                        genereteImages("download_icon", "download.png");
-                    }, 4000);
-
-                    setTimeout(function() {
-                        genereteImages("flash_icon", "flash.png");
-                        document.getElementById("loading_page_div").style.display = 'none';
-                        document.getElementById("page_content").style.display = 'block';
-                        page_full_loaded = true;
-                        //document.body.style.display = 'block';
-                    }, 5000);
-
+                    loadImages();
                 };
                 Request.send();
             }
@@ -506,7 +695,7 @@
                 var btn = document.getElementById('btn');
                 btn.addEventListener('click', function() {
                     var Request = new XMLHttpRequest();
-                    Request.open('GET', 'data.json');
+                    Request.open('GET', 'info.json');
                     Request.onload = function() {
                         var Data = JSON.parse(Request.responseText);
                         console.log(Data);
@@ -530,7 +719,10 @@
 
                 });
 
-                // sent_bt_msg_from_page
+                var files_header = document.getElementById("Files_header_text");
+                files_header.addEventListener('click', function() {
+                    showFolder("/");
+                });
 
                 var sent_bt_btn = document.getElementById("sent_bt_btn");
 

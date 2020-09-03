@@ -1,5 +1,10 @@
 #include "NetworkManager.h"
 
+void NetworkManager::getInof(JsonObject json){
+    json["Connected_SSID"] = WiFi.SSID();
+    json["Using_IP"] = WiFi.localIP().toString();
+}
+
 NetworkManager::NetworkManager(File networks_file) {
     loadDataFromSettingsFile(networks_file);
 

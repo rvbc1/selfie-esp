@@ -9,7 +9,7 @@
 class Flasher {
    public:
    Flasher(MemoryManager* memory);
-   void FlashESP32();
+   uint8_t FlashESP32(String filename);
    private:
     MemoryManager* memory;
 };

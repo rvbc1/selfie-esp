@@ -10,6 +10,7 @@
 #include "HttpServer.h"
 #include "MemoryManager.h"
 #include "Flasher.h"
+#include "BluetoothManager.h"
 
 
 

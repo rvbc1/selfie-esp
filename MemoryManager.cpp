@@ -1,4 +1,5 @@
 #include "MemoryManager.h"
+
 #include "SdFatJson.h"
 
 void ls(char* path) {
@@ -10,6 +11,58 @@ void ls(char* path) {
     dir.ls(&Serial, LS_R);
 }
 
+uint8_t MemoryManager::removeFileIfExists(String filename) {
+    if (sd.exists(const_cast<char *>(filename.c_str()))) {
+        Serial.print("Deleting existing file ");
+        Serial.println(filename);
+        return sd.remove(
+            const_cast<char *>(filename.c_str()));
+    }
+    return false;
+}
+
+uint8_t MemoryManager::removeDirIfExists(String filename) {
+    if (sd.exists(const_cast<char *>(filename.c_str()))) {
+        Serial.print("Deleting existing dir ");
+        Serial.println(filename);
+        return sd.rmdir(
+            const_cast<char *>(filename.c_str()));
+    }
+    return false;
+}
+
+void MemoryManager::getInof(JsonObject json) {
+    switch (sd.card()->type()) {
+        case SD_CARD_TYPE_SD1:
+            json["SD_type"] = "SD1";
+            break;
+        case SD_CARD_TYPE_SD2:
+            json["SD_type"] = "SD2";
+            break;
+        case SD_CARD_TYPE_SDHC:
+            json["SD_type"] = "SDHC";
+            break;
+        default:
+            json["SD_type"] = "Unknown";
+    }
+
+    json["FAT_type"] = sd.vol()->fatType();
+
+    uint32_t volumesize;
+    volumesize = sd.vol()->blocksPerCluster();
+    volumesize *= sd.vol()->clusterCount();
+    volumesize /= 2;     // KB
+    volumesize /= 1024;  // MB
+    json["Volume_size_Gb"] = (float)volumesize / 1024.0;
+
+    // Very slow!
+    // uint32_t free_volumesize;
+    // free_volumesize = sd.vol()->blocksPerCluster();
+    // free_volumesize *= sd.vol()->freeClusterCount();
+    // free_volumesize /= 2;  // KB
+    // free_volumesize /= 1024;  //MB
+    // json["Free_size_Gb"] = (float)free_volumesize / 1024.0;
+}
 
 MemoryManager::MemoryManager() {
     SdFile dirFile;
@@ -71,9 +124,9 @@ MemoryManager::MemoryManager() {
     //     Serial.println("error opening test.txt");
     // }
     // ls("/");
-  //  superFatFile rootDir;
-   // rootDir.open("/");
-    //rootDir.ls(LS_R | LS_SIZE);
+    //  superFatFile rootDir;
+    // rootDir.open("/");
+    // rootDir.ls(LS_R | LS_SIZE);
     sd.ls(&Serial, LS_R | LS_SIZE);
 
     delay(1000);
@@ -106,8 +159,8 @@ MemoryManager::MemoryManager() {
             // Print the file number and name.
             Serial.print(n++);
             Serial.write(' ');
-            //file.printName(&Serial);
-           Serial.println(file.getStringName());
+            // file.printName(&Serial);
+            Serial.println(file.getStringName());
         }
         file.close();
     }

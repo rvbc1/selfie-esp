@@ -10,8 +10,10 @@
 
 ESP32WebServer server(HTTP_PORT);
 
+NetworkManager *HttpServer::network;
 MemoryManager *HttpServer::memory;
 Flasher *HttpServer::flasher;
+BluetoothManager *HttpServer::bt_manager;
 
 String HttpServer::bt_console = "";
 
@@ -46,33 +48,58 @@ void HomePage() {
 //     // digitalWrite(led, 0);
 // }
 
-uint8_t removeFileIfExists(String filename) {
-    if (HttpServer::memory->sd.exists(const_cast<char *>(filename.c_str()))) {
-        Serial.print("Deleting existing file ");
-        Serial.println(filename);
-        return HttpServer::memory->sd.remove(
-            const_cast<char *>(filename.c_str()));
-    }
-    return false;
-}
-
-uint8_t removeDirIfExists(String filename) {
-    if (HttpServer::memory->sd.exists(const_cast<char *>(filename.c_str()))) {
-        Serial.print("Deleting existing dir ");
-        Serial.println(filename);
-        return HttpServer::memory->sd.rmdir(
-            const_cast<char *>(filename.c_str()));
-    }
-    return false;
-}
-
 File fsUploadFile;
+
+void handleFileUploadRequest() {  // upload a new file to the SPIFFS
+    HTTPUpload &upload = server.upload();
+    if (upload.status == UPLOAD_FILE_START) {
+        String filename = upload.filename;
+        Serial.print("handleFileUpload Name: ");
+
+        // for (uint8_t i = 0; i < server.args(); i++) {
+        //     Serial.print(server.argName(i));
+        //     Serial.print(" = ");
+        //     Serial.println(server.arg(i));
+        // }
+
+        String dir = "";
+
+        if (server.hasArg("dir") && server.arg("dir") != NULL) {
+            dir = server.arg("dir");
+        }
+        if (dir == "/") {
+            filename = dir + filename;
+        } else {
+            filename = dir + "/" + filename;
+        }
+
+        Serial.println(filename);
+
+        HttpServer::memory->removeFileIfExists(filename);
+
+        fsUploadFile.open(filename.c_str(), O_RDWR | O_CREAT);
+
+        filename = String();
+    } else if (upload.status == UPLOAD_FILE_WRITE) {
+        if (fsUploadFile)
+            fsUploadFile.write(
+                upload.buf,
+                upload.currentSize);  // Write the received bytes to the file
+    } else if (upload.status == UPLOAD_FILE_END) {
+        if (fsUploadFile) {        // If the file was successfully created
+            fsUploadFile.close();  // Close the file again
+            Serial.print("handleFileUpload Size: ");
+            Serial.println(upload.totalSize);
+        } else {
+            server.send(500, "text/plain", "500: couldn't create file");
+        }
+    }
+}
 
 void handleFileUpload() {  // upload a new file to the SPIFFS
     HTTPUpload &upload = server.upload();
     if (upload.status == UPLOAD_FILE_START) {
         String filename = upload.filename;
-        if (!filename.startsWith("/")) filename = "/" + filename;
         Serial.print("handleFileUpload Name: ");
 
         for (uint8_t i = 0; i < server.args(); i++) {
@@ -87,11 +114,15 @@ void handleFileUpload() {  // upload a new file to the SPIFFS
             dir = server.arg("dir");
         }
 
-        filename = dir + filename;
+        if (dir == "/") {
+            filename = dir + filename;
+        } else {
+            filename = dir + "/" + filename;
+        }
 
         Serial.println(filename);
 
-        removeFileIfExists(filename);
+        HttpServer::memory->removeFileIfExists(filename);
 
         fsUploadFile.open(filename.c_str(), O_RDWR | O_CREAT);
 
@@ -138,15 +169,13 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
 
         if (HttpServer::memory->sd.exists(
                 const_cast<char *>(filename.c_str()))) {
-            removeFileIfExists(OLD_FIRMWARE_FILE);
+            HttpServer::memory->removeFileIfExists(OLD_FIRMWARE_FILE);
             HttpServer::memory->sd.rename(
                 const_cast<char *>(filename.c_str()),
                 const_cast<char *>(old_filename.c_str()));
         }
-
         fsUploadFile.open(filename.c_str(), O_RDWR | O_CREAT);
 
-        filename = String();
     } else if (upload.status == UPLOAD_FILE_WRITE) {
         if (fsUploadFile) fsUploadFile.write(upload.buf, upload.currentSize);
     } else if (upload.status == UPLOAD_FILE_END) {
@@ -154,9 +183,13 @@ void handleFileFlash() {  // upload a new file to the SPIFFS
             fsUploadFile.close();  // Close the file again
             Serial.print("handleFileUpload Size: ");
             Serial.println(upload.totalSize);
-            server.sendHeader("Location", "/");
-            server.send(303);
-            HttpServer::flasher->FlashESP32();
+            String filename = FIRMWARE_FILE;
+            if (HttpServer::flasher->FlashESP32(filename)) {
+                server.sendHeader("Location", "/");
+                server.send(303);
+            } else {
+                server.send(500, "text/plain", "500: couldn't create file");
+            }
 
         } else {
             server.send(500, "text/plain", "500: couldn't create file");
@@ -203,18 +236,13 @@ void addJsonArray(String dir, JsonVariant *variant) {
 }
 
 String generateJson() {
-    DynamicJsonDocument doc(4096);
+    DynamicJsonDocument doc(8192);
     JsonVariant variant = doc.to<JsonVariant>();
     addJsonArray("/", &variant);
 
     String Json = "";
     serializeJson(doc, Json);
     return Json;
-}
-
-void HttpServer::setBTmsg(String msg) {
-    bt_console += "<<< " + msg;
-    bt_console += ">>> OK\n";
 }
 
 uint8_t HttpServer::loadHttpSettingsFromFile(File http_file) {
@@ -250,10 +278,13 @@ uint8_t HttpServer::loadHttpSettingsFromFile(File http_file) {
     return true;
 }
 
-HttpServer::HttpServer(Flasher *flasher2, MemoryManager *memory2,
+HttpServer::HttpServer(Flasher *flasher2, BluetoothManager *bt_manager2,
+                       NetworkManager *network2, MemoryManager *memory2,
                        File http_file) {
+    network = network2;
     memory = memory2;
     flasher = flasher2;
+    bt_manager = bt_manager2;
 
     loadHttpSettingsFromFile(http_file);
     if (MDNS.begin(const_cast<char *>(mdns_name.c_str()))) {
@@ -311,18 +342,29 @@ HttpServer::HttpServer(Flasher *flasher2, MemoryManager *memory2,
     server.on("/data.json",
               []() { server.send(200, "text/plain", generateJson()); });
 
+    server.on("/info.json", []() {
+        DynamicJsonDocument doc(1024);
+        JsonObject json = doc.to<JsonObject>();
+        HttpServer::network->getInof(json.createNestedObject(F("Network")));
+        HttpServer::memory->getInof(json.createNestedObject(F("Memory")));
+
+        String json_raw = "";
+        serializeJson(doc, json_raw);
+        server.send(200, "text/plain", json_raw);
+    });
+
     server.on("/delete", []() {
         uint8_t success_flag = false;
         if (server.hasArg("name") && server.arg("name") != NULL &&
             server.hasArg("type") && server.arg("type") != NULL) {
             String filename = server.arg("name");
             if (server.arg("type") == "file") {
-                if (removeFileIfExists(filename)) {
+                if (HttpServer::memory->removeFileIfExists(filename)) {
                     success_flag = true;
                 }
 
             } else if (server.arg("type") == "dir") {
-                if (removeDirIfExists(filename)) {
+                if (HttpServer::memory->removeDirIfExists(filename)) {
                     success_flag = true;
                 }
             }
@@ -340,6 +382,7 @@ HttpServer::HttpServer(Flasher *flasher2, MemoryManager *memory2,
             String filename = server.arg("dir");
             if (!filename.endsWith("/")) filename += "/";
             filename += server.arg("name");
+            Serial.println("Creating dir:" + filename);
             if (HttpServer::memory->sd.mkdir(
                     const_cast<char *>(filename.c_str()), false)) {
                 server.send(204);
@@ -381,25 +424,24 @@ HttpServer::HttpServer(Flasher *flasher2, MemoryManager *memory2,
     // server.on("/network", handleRoot);
     //  server.on("/sent_bt_msg_from_page", handleRoot);
 
-    server.on("/sent_bt_msg_from_page", []() {
-        if (server.hasArg("value") && server.arg("value") != NULL) {
-            HttpServer::setBTmsg(server.arg("value"));
-            server.send(204);
-        } else {
-            server.send(500);
-        }
-    });
-
     server.on("/inline",
               []() { server.send(200, "text/plain", "this works as well"); });
 
-    server.on("/update", []() {
-       // if (HttpServer::flasher->FlashESP32()) {
-           HttpServer::flasher->FlashESP32();
-            server.send(204);
-    //    } else {
-    //        server.send(500);
-     //   }
+    server.on("/flash_esp32_request", []() {
+        // if (HttpServer::flasher->FlashESP32()) {
+        // String filename = ESP32;
+        if (server.hasArg("file") && server.arg("file") != NULL) {
+            String filename = server.arg("file");
+
+            if (HttpServer::flasher->FlashESP32(filename)) {
+                server.send(204);
+            } else {
+                server.send(500);
+            }
+
+        } else {
+            server.send(500);
+        }
     });
 
     server.on("/flash", HTTP_GET,
@@ -423,6 +465,10 @@ HttpServer::HttpServer(Flasher *flasher2, MemoryManager *memory2,
 
     server.on(
         "/upload", HTTP_POST, []() { server.send(200); }, handleFileUpload);
+
+    server.on(
+        "/upload_request", HTTP_POST, []() { server.send(200); },
+        handleFileUploadRequest);
     // server.on("/upload", HTTP_POST,  // Send status 200 (OK) to tell the
     // client
     //                                  // we are ready to receive
@@ -439,7 +485,20 @@ HttpServer::HttpServer(Flasher *flasher2, MemoryManager *memory2,
         ESP.restart();
     });
 
-    server.on("/readBT", []() { server.send(200, "text/plain", bt_console); });
+    server.on("/sent_bt_msg_from_page", []() {
+        if (server.hasArg("value") && server.arg("value") != NULL) {
+            // HttpServer::setBTmsg(server.arg("value"));
+            HttpServer::bt_manager->recivedMessage(server.arg("value"));
+            server.send(204);
+        } else {
+            server.send(500);
+        }
+    });
+
+    server.on("/readBT", []() {
+        server.send(200, "text/plain",
+                    HttpServer::bt_manager->getConversation());
+    });
 
     server.begin();
     Serial.println("HTTP server started");
