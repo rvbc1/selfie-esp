@@ -23,20 +23,23 @@ STM32Flasher::STM32Flasher(std::string port) {
 }
 
 void STM32Flasher::openConnection() {
-    if (is_port_open) {
+  //  if (is_port_open) {
         uart->addDataToBufferTX(START_CODE);
         uart->writeData();
         is_connection_open = checkResponse(ACK_AT_END);
 
-#if defined(__linux__) || defined(__FreeBSD__) || (__Windows__)
+//#if defined(__linux__) || defined(__FreeBSD__) || (__Windows__)
         if (is_connection_open == false){
             printInfo("Cannot start comunication with uC");
             printInfo("Check wiring & set bootloader at chip");
-            exit(1);
-        }
-#endif
+            //exit(1);
+        } else {
+            std::cout << "connection is_port_open" << std::endl;
+}
+//        }
+//#endif
 
-    }
+  //  }
 }
 
 void STM32Flasher::getCommand() {
@@ -44,8 +47,8 @@ void STM32Flasher::getCommand() {
         writeCommand(GET_COMMAND);
         checkResponse();
 
-        //std::cout << "Frame size: " << std::dec << +buffer->data[1] << std::endl;
-        //std::cout << "bootloader: " << std::hex << +buffer->data[2] << std::endl;
+        std::cout << "Frame size: " << std::dec << +buffer->data[1] << std::endl;
+        std::cout << "bootloader: " << std::hex << +buffer->data[2] << std::endl;
     }
 }
 

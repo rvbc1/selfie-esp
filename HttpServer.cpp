@@ -473,9 +473,11 @@ HttpServer::HttpServer(Flasher *flasher2, BluetoothManager *bt_manager2,
 
                 download.close();
             }
-
+            
             if (file_stm.size > 0) {
+                Serial.print("Start flash");
                 flasher_stm->flashFile(file_stm);
+                server.send(204);
             }
 
         } else {
