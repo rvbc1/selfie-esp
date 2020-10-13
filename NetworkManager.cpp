@@ -1,6 +1,24 @@
 #include "NetworkManager.h"
 
-void NetworkManager::getInof(JsonObject json){
+void NetworkManager::getNetworkInfo(JsonObject json) {
+    int n = WiFi.scanNetworks();
+    json["Funded_networks"] = n;
+    if (n > 0) {
+        JsonArray networks = json.createNestedArray("Networks");
+        for (int i = 0; i < n; ++i) {
+            JsonObject network = networks.createNestedObject();
+            network["SSID"] = WiFi.SSID(i);
+            network["RSSI"] = WiFi.RSSI(i);
+            if (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) {
+                network["OPEN"] = "yes";
+            } else {
+                network["OPEN"] = "no";
+            }
+        }
+    }
+}
+
+void NetworkManager::getInof(JsonObject json) {
     json["Connected_SSID"] = WiFi.SSID();
     json["Using_IP"] = WiFi.localIP().toString();
 }
@@ -354,7 +372,7 @@ void NetworkManager::printLoadedData() {
     Serial.print("  max_connection: ");
     Serial.println(((int)access_point_max_connection));
 
-      Serial.println("  static IP:");
+    Serial.println("  static IP:");
     if (using_static_IP)
         Serial.println("    using: yes");
     else

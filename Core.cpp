@@ -1,5 +1,8 @@
 #include "Core.h"
 
+#define RXD2 16
+#define TXD2 17
+
 TaskHandle_t Task1;
 TaskHandle_t Task2;
 
@@ -21,6 +24,8 @@ void Task2code(void* pvParameters) { bt_manager->process(); }
 
 Core::Core() {
     Serial.begin(115200);
+    Serial2.begin(115200, SERIAL_8E1, RXD2, TXD2);
+
     delay(3000);
 
     MemoryManager* memory = new MemoryManager();

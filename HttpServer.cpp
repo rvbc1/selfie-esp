@@ -1,5 +1,7 @@
 #include "HttpServer.h"
 
+#include "STM32Flasher.h"
+
 #include <ArduinoJson.h>
 #include <ESP32WebServer.h>
 #include <ESPmDNS.h>
@@ -16,6 +18,8 @@ Flasher *HttpServer::flasher;
 BluetoothManager *HttpServer::bt_manager;
 
 String HttpServer::bt_console = "";
+
+STM32Flasher* flasher_stm;
 
 void HomePage() {
     File file = HttpServer::memory->sd.open("WWW/index.html");
@@ -286,6 +290,9 @@ HttpServer::HttpServer(Flasher *flasher2, BluetoothManager *bt_manager2,
     flasher = flasher2;
     bt_manager = bt_manager2;
 
+    flasher_stm = new STM32Flasher("");
+
+
     loadHttpSettingsFromFile(http_file);
     if (MDNS.begin(const_cast<char *>(mdns_name.c_str()))) {
         Serial.println("MDNS responder started");
@@ -346,6 +353,8 @@ HttpServer::HttpServer(Flasher *flasher2, BluetoothManager *bt_manager2,
         DynamicJsonDocument doc(1024);
         JsonObject json = doc.to<JsonObject>();
         HttpServer::network->getInof(json.createNestedObject(F("Network")));
+        HttpServer::network->getNetworkInfo(
+            json.createNestedObject(F("Founded_wifi")));
         HttpServer::memory->getInof(json.createNestedObject(F("Memory")));
 
         String json_raw = "";
@@ -437,6 +446,36 @@ HttpServer::HttpServer(Flasher *flasher2, BluetoothManager *bt_manager2,
                 server.send(204);
             } else {
                 server.send(500);
+            }
+
+        } else {
+            server.send(500);
+        }
+    });
+
+    server.on("/flash_stm32", []() {
+        // if (HttpServer::flasher->FlashESP32()) {
+        // String filename = ESP32;
+        if (server.hasArg("file") && server.arg("file") != NULL) {
+            String filename = server.arg("file");
+
+            File download;
+            download.open(const_cast<char *>(filename.c_str()));
+            FileReader::file_struct file_stm;
+            file_stm.size = 0;
+            if (download) {
+                file_stm.size = download.size();
+                file_stm.data = new uint8_t[file_stm.size];
+                Serial.print("size stm: ");
+                Serial.println(file_stm.size);
+
+                download.readBytes((char *)file_stm.data, file_stm.size);
+
+                download.close();
+            }
+
+            if (file_stm.size > 0) {
+                flasher_stm->flashFile(file_stm);
             }
 
         } else {

@@ -20,6 +20,7 @@
 
 class NetworkManager {
    public:
+    void getNetworkInfo(JsonObject json);
     void getInof(JsonObject json);
     NetworkManager(File networks_file);
 
